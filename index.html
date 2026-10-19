@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>机械制图过程演示</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <h1>机械制图过程演示</h1>
+    <button id="btn-settings" class="btn-secondary">⚙ API 设置</button>
+  </header>
+
+  <main>
+    <aside class="sidebar">
+      <div class="panel">
+        <h3>1. 上传零件图</h3>
+        <input type="file" id="file-input" accept="image/*" hidden>
+        <button id="btn-upload" class="btn-primary">📷 拍照 / 上传图片</button>
+        <p class="hint">支持轴类、法兰盘、支架等简单零件</p>
+      </div>
+
+      <div class="panel">
+        <h3>2. 或手动选择模板</h3>
+        <div id="template-list" class="template-list">
+          <button class="template-item" data-template="shaft">阶梯轴</button>
+          <button class="template-item" data-template="flange">法兰盘</button>
+          <button class="template-item" data-template="bracket">支架</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>当前零件</h3>
+        <div id="current-part-name">未选择</div>
+        <div id="current-part-params" class="params-display"></div>
+      </div>
+    </aside>
+
+    <section class="canvas-area">
+      <canvas id="canvas" width="900" height="550"></canvas>
+      <div id="overlay-loading" class="overlay hidden">
+        <div class="spinner"></div>
+        <p>AI 正在识图中...</p>
+      </div>
+    </section>
+
+    <aside class="sidebar right">
+      <div class="panel">
+        <h3>绘制步骤</h3>
+        <div id="step-list" class="step-list">
+          <p class="hint">上传图片或选择模板后开始</p>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>当前讲解</h3>
+        <div id="step-desc" class="step-desc">—</div>
+      </div>
+    </aside>
+  </main>
+
+  <footer>
+    <button id="btn-prev" class="btn-control" disabled>⏮ 上一步</button>
+    <button id="btn-play" class="btn-control btn-primary" disabled>▶ 播放</button>
+    <button id="btn-next" class="btn-control" disabled>下一步 ⏭</button>
+    <div class="speed-control">
+      <label>速度：</label>
+      <select id="speed-select">
+        <option value="0.5">0.5x</option>
+        <option value="1" selected>1x</option>
+        <option value="2">2x</option>
+        <option value="4">4x</option>
+      </select>
+    </div>
+    <div class="step-progress">
+      <span id="step-current">0</span> / <span id="step-total">0</span>
+    </div>
+  </footer>
+
+  <div id="settings-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>API 设置</h2>
+      <p class="hint">你的 API Key 只存在浏览器本地，不会上传。</p>
+      <label>API Base URL</label>
+      <input type="text" id="cfg-baseurl" placeholder="https://api.openai.com/v1" value="https://api.openai.com/v1">
+      <label>API Key</label>
+      <input type="password" id="cfg-apikey" placeholder="sk-...">
+      <label>模型名称</label>
+      <input type="text" id="cfg-model" placeholder="gpt-4o" value="gpt-4o">
+      <div class="modal-actions">
+        <button id="btn-cancel-settings" class="btn-secondary">取消</button>
+        <button id="btn-save-settings" class="btn-primary">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/templates.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/llm.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
