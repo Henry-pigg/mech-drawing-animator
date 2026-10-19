@@ -1,119 +1,127 @@
+/* Player — 步骤播放器 */
 class Player {
-  constructor(engine) {
+  constructor(engine, ui) {
     this.engine = engine
+    this.ui = ui
     this.steps = []
-    this.currentStep = -1
+    this.current = 0
+    this.t = 0
     this.playing = false
     this.speed = 1
-    this.btnPrev = document.getElementById('btn-prev')
-    this.btnPlay = document.getElementById('btn-play')
-    this.btnNext = document.getElementById('btn-next')
-    this.speedSelect = document.getElementById('speed-select')
-    this.stepCurrent = document.getElementById('step-current')
-    this.stepTotal = document.getElementById('step-total')
-    this.stepList = document.getElementById('step-list')
-    this.stepDesc = document.getElementById('step-desc')
-    this.btnPrev.onclick = () => this.prev()
-    this.btnNext.onclick = () => this.next()
-    this.btnPlay.onclick = () => this.togglePlay()
-    this.speedSelect.onchange = (e) => { this.speed = parseFloat(e.target.value) }
+    this.last = 0
+    this._raf = null
+    this._loop = this._loop.bind(this)
+    this.ui.btnPrev.onclick = () => this.prev()
+    this.ui.btnNext.onclick = () => this.next()
+    this.ui.btnPlay.onclick = () => this.toggle()
+    this.ui.speedSelect.onchange = e => { this.speed = parseFloat(e.target.value) }
   }
-  loadSteps(steps) {
-    this.steps = steps
-    this.currentStep = -1
-    this.engine.clear()
-    this._renderStepList()
-    this._updateUI()
-    this.stepTotal.textContent = steps.length
+
+  load(drawing) {
+    this.drawing = drawing
+    this.steps = drawing.steps
+    this.current = 0
+    this.t = 1
+    this.playing = false
+    this.engine.setDrawing(drawing)
+    this.renderStepList()
+    this.update()
+    this.engine.setState({ step: 0, t: 1 })
   }
-  _renderStepList() {
-    this.stepList.innerHTML = ''
-    this.steps.forEach((step, i) => {
-      const div = document.createElement('div')
-      div.className = 'step-item'
-      div.textContent = `${i+1}. ${step.desc.slice(0,30)}...`
-      div.onclick = () => this.jumpTo(i)
-      this.stepList.appendChild(div)
+
+  renderStepList() {
+    const box = this.ui.stepList
+    box.innerHTML = ''
+    this.steps.forEach((s, i) => {
+      const d = document.createElement('div')
+      d.className = 'step-item'
+      d.innerHTML = `<span class="idx">${i + 1}</span><span class="tt">${s.title.replace(/^\d+[.、]\s*/, '')}</span>`
+      d.onclick = () => this.jump(i)
+      box.appendChild(d)
     })
   }
-  _highlightStep() {
-    const items = this.stepList.querySelectorAll('.step-item')
-    items.forEach((el, i) => {
-      el.classList.remove('current','done')
-      if (i < this.currentStep) el.classList.add('done')
-      if (i === this.currentStep) el.classList.add('current')
+
+  update() {
+    const s = this.steps[this.current]
+    this.ui.stepCurrent.textContent = this.current + 1
+    this.ui.stepTotal.textContent = this.steps.length
+    this.ui.stepDesc.textContent = s ? s.desc : '—'
+    this.ui.stepTitle.textContent = s ? s.title : ''
+    this.ui.partName.textContent = this.drawing.title || ''
+    this.ui.btnPrev.disabled = this.current <= 0
+    this.ui.btnNext.disabled = this.current >= this.steps.length - 1
+    this.ui.btnPlay.disabled = this.steps.length === 0
+    this.ui.btnPlay.textContent = this.playing ? '⏸ 暂停' : (this.current >= this.steps.length - 1 ? '↻ 重播' : '▶ 播放')
+    ;[...this.ui.stepList.children].forEach((el, i) => {
+      el.classList.toggle('current', i === this.current)
+      el.classList.toggle('done', i < this.current)
     })
+    const cur = this.ui.stepList.children[this.current]
+    if (cur && cur.scrollIntoView) cur.scrollIntoView({ block: 'nearest' })
   }
-  _updateUI() {
-    this.stepCurrent.textContent = this.currentStep + 1
-    this.btnPrev.disabled = this.currentStep <= 0
-    this.btnNext.disabled = this.currentStep >= this.steps.length - 1
-    this.btnPlay.disabled = this.steps.length === 0
-    if (this.currentStep >= 0 && this.steps[this.currentStep]) {
-      this.stepDesc.textContent = this.steps[this.currentStep].desc
-    }
-    this._highlightStep()
+
+  jump(i) {
+    this.playing = false
+    this.current = Math.max(0, Math.min(this.steps.length - 1, i))
+    this.t = 1
+    this.engine.setState({ step: this.current, t: 1 })
+    this.update()
   }
-  async next() {
-    if (this.currentStep >= this.steps.length - 1) return
-    this.currentStep++
-    this._updateUI()
-    await this._animateStep(this.currentStep)
-    if (this.playing && this.currentStep < this.steps.length - 1) {
-      setTimeout(() => this.next(), 800 / this.speed)
-    } else if (this.currentStep >= this.steps.length - 1) {
-      this.playing = false
-      this.btnPlay.textContent = '▶ 播放'
+
+  next() {
+    if (this.current < this.steps.length - 1) {
+      this.current++
+      this.t = 1
+      this.engine.setState({ step: this.current, t: 1 })
+      this.update()
     }
   }
+
   prev() {
-    if (this.currentStep <= 0) return
     this.playing = false
-    this.btnPlay.textContent = '▶ 播放'
-    this.currentStep--
-    this.engine.clear()
-    for (let i = 0; i <= this.currentStep; i++) this.engine.drawStepComplete(this.steps[i])
-    this._updateUI()
+    if (this.current > 0) this.current--
+    this.t = 1
+    this.engine.setState({ step: this.current, t: 1 })
+    this.update()
   }
-  jumpTo(i) {
-    this.playing = false
-    this.btnPlay.textContent = '▶ 播放'
-    this.currentStep = i
-    this.engine.clear()
-    for (let j = 0; j <= i; j++) this.engine.drawStepComplete(this.steps[j])
-    this._updateUI()
-  }
-  togglePlay() {
-    if (this.playing) {
-      this.playing = false
-      this.btnPlay.textContent = '▶ 播放'
-    } else {
-      this.playing = true
-      this.btnPlay.textContent = '⏸ 暂停'
-      if (this.currentStep >= this.steps.length - 1) {
-        this.currentStep = -1
-        this.engine.clear()
-      }
-      this.next()
+
+  toggle() {
+    if (this.playing) { this.playing = false; this.update(); return }
+    if (this.current >= this.steps.length - 1) {
+      this.current = 0
+      this.t = 0
+      this.engine.setState({ step: 0, t: 0 })
     }
+    this.playing = true
+    this.last = performance.now()
+    this.update()
+    if (!this._raf) this._raf = requestAnimationFrame(this._loop)
   }
-  _animateStep(stepIdx) {
-    return new Promise(resolve => {
-      const step = this.steps[stepIdx]
-      const elements = step.elements
-      let elIdx = 0, progress = 0
-      const animate = () => {
-        if (elIdx >= elements.length) { resolve(); return }
-        progress += 0.08
-        if (progress >= 1) progress = 1
-        this.engine.clear()
-        for (let i = 0; i < stepIdx; i++) this.engine.drawStepComplete(this.steps[i])
-        for (let i = 0; i < elIdx; i++) this.engine.drawElement(elements[i], 1)
-        this.engine.drawElement(elements[elIdx], progress)
-        if (progress >= 1) { elIdx++; progress = 0 }
-        requestAnimationFrame(animate)
+
+  _loop(now) {
+    this._raf = null
+    if (!this.playing) return
+    const dt = Math.min(80, now - this.last)
+    this.last = now
+    const dur = 1600 / this.speed
+    this.t += dt / dur
+    if (this.t >= 1) {
+      this.t = 1
+      this.engine.setState({ step: this.current, t: 1 })
+      if (this.current < this.steps.length - 1) {
+        this.current++
+        this.t = 0
+        this.update()
+        this.engine.setState({ step: this.current, t: 0 })
+        this.last = performance.now()
+      } else {
+        this.playing = false
+        this.update()
+        return
       }
-      animate()
-    })
+    } else {
+      this.engine.setState({ step: this.current, t: this.t })
+    }
+    this._raf = requestAnimationFrame(this._loop)
   }
 }

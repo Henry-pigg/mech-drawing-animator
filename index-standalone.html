@@ -3,296 +3,260 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>机械制图过程演示</title>
+  <title>机械制图过程演示 · 画法几何</title>
   <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+:root {
+  --ink: #1a1f24;
+  --muted: #6b7480;
+  --line: #e3e7ec;
+  --bg: #f4f6f8;
+  --blue: #2f6f9f;
+  --blue-d: #245a83;
+  --accent: #c0392b;
+}
+
 body {
-  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
-  background: #f5f5f5;
-  color: #333;
+  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--ink);
   display: flex;
   flex-direction: column;
   height: 100vh;
   overflow: hidden;
+  font-size: 14px;
 }
 
 header {
-  background: #2c3e50;
-  color: #fff;
-  padding: 12px 20px;
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+  padding: 10px 18px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
-header h1 { font-size: 18px; font-weight: 600; }
-
-main {
-  flex: 1;
-  display: flex;
-  overflow: hidden;
-}
-
-.sidebar {
-  width: 240px;
-  background: #fff;
-  border-right: 1px solid #e0e0e0;
-  padding: 16px;
-  overflow-y: auto;
   flex-shrink: 0;
 }
-.sidebar.right {
-  border-right: none;
-  border-left: 1px solid #e0e0e0;
+.brand { display: flex; align-items: center; gap: 12px; }
+.logo {
+  width: 34px; height: 34px; border-radius: 9px;
+  background: linear-gradient(135deg, #2f6f9f, #1f4e73);
+  color: #fff; display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 700;
 }
+header h1 { font-size: 16px; font-weight: 600; letter-spacing: .2px; }
+header .sub { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
 
-.panel { margin-bottom: 20px; }
+main { flex: 1; display: flex; overflow: hidden; }
+
+.sidebar {
+  width: 232px;
+  background: #fff;
+  border-right: 1px solid var(--line);
+  padding: 14px 14px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.sidebar.right { border-right: none; border-left: 1px solid var(--line); width: 268px; }
+
+.panel { display: flex; flex-direction: column; gap: 8px; }
+.panel.grow { flex: 1; min-height: 0; }
+.panel.last { border-top: 1px solid var(--line); padding-top: 10px; }
 .panel h3 {
-  font-size: 13px;
-  color: #888;
-  margin-bottom: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-size: 11px; color: var(--muted); font-weight: 600;
+  letter-spacing: 1.2px; text-transform: uppercase;
 }
 
 .canvas-area {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #fafafa;
-  position: relative;
-  padding: 20px;
+  flex: 1; position: relative; display: flex; align-items: stretch; justify-content: stretch;
+  background: #eef1f4; padding: 10px; min-width: 0;
 }
-#canvas {
-  background: #fff;
-  border: 1px solid #ddd;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  max-width: 100%;
-  max-height: 100%;
-}
+#canvas { width: 100%; height: 100%; background: #fff; border-radius: 6px; box-shadow: 0 2px 12px rgba(20,30,40,.08); }
 
 .btn-primary {
-  background: #3498db;
-  color: #fff;
-  border: none;
-  padding: 10px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  width: 100%;
-  transition: background 0.2s;
+  background: var(--blue); color: #fff; border: none;
+  padding: 10px 14px; border-radius: 7px; cursor: pointer;
+  font-size: 13.5px; width: 100%; transition: background .15s;
 }
-.btn-primary:hover { background: #2980b9; }
+.btn-primary:hover { background: var(--blue-d); }
 
 .btn-secondary {
-  background: transparent;
-  color: #fff;
-  border: 1px solid rgba(255,255,255,0.4);
-  padding: 6px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 13px;
+  background: #fff; color: var(--ink); border: 1px solid var(--line);
+  padding: 7px 14px; border-radius: 7px; cursor: pointer; font-size: 13px;
 }
-.btn-secondary:hover { background: rgba(255,255,255,0.1); }
+.btn-secondary:hover { background: #f6f8fa; }
+.btn-secondary.dark { background: #eef1f4; border-color: #e0e5ea; }
 
-.btn-control {
-  background: #fff;
-  border: 1px solid #ddd;
-  padding: 8px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s;
-}
-.btn-control:hover:not(:disabled) { background: #f0f0f0; }
-.btn-control:disabled { opacity: 0.4; cursor: not-allowed; }
-.btn-control.btn-primary {
-  background: #3498db;
-  color: #fff;
-  border-color: #3498db;
-  min-width: 80px;
-}
+.hint { font-size: 11.5px; color: var(--muted); line-height: 1.6; }
 
-.template-list { display: flex; flex-direction: column; gap: 8px; }
+/* 题库 */
+.template-list { overflow-y: auto; flex: 1; padding-right: 2px; }
+.cat { margin-bottom: 10px; }
+.cat-h {
+  font-size: 10.5px; color: #97a1ac; letter-spacing: .6px;
+  padding: 2px 0 5px; border-bottom: 1px dashed #eef1f4; margin-bottom: 5px;
+}
 .template-item {
-  background: #f8f9fa;
-  border: 1px solid #e0e0e0;
-  padding: 10px;
-  border-radius: 6px;
-  cursor: pointer;
-  text-align: left;
-  font-size: 14px;
-  transition: all 0.2s;
+  display: block; width: 100%; text-align: left; background: transparent;
+  border: none; padding: 6px 8px; border-radius: 6px; font-size: 13px;
+  color: #39424c; cursor: pointer; transition: background .12s, color .12s;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.template-item:hover { background: #e3f2fd; border-color: #3498db; }
-.template-item.active { background: #3498db; color: #fff; border-color: #3498db; }
+.template-item:hover { background: #f2f6fa; color: var(--blue-d); }
+.template-item.active { background: #e8f1f8; color: var(--blue-d); font-weight: 600; }
 
-.hint { font-size: 12px; color: #999; margin-top: 8px; line-height: 1.5; }
+.current-name { font-size: 13px; color: var(--blue-d); font-weight: 600; line-height: 1.5; }
 
-.step-list { max-height: 300px; overflow-y: auto; }
+/* 变体选择 */
+.variant-bar {
+  position: absolute; left: 22px; top: 22px;
+  display: flex; gap: 6px; flex-wrap: wrap; max-width: 70%;
+}
+.variant-bar.hidden { display: none; }
+.chip {
+  background: rgba(255,255,255,.94); border: 1px solid #d8dfe6; color: #46515c;
+  padding: 4px 10px; border-radius: 999px; font-size: 12px; cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+.chip:hover { border-color: var(--blue); color: var(--blue); }
+.chip.on { background: var(--blue); color: #fff; border-color: var(--blue); }
+.ai-note { font-size: 12px; color: var(--muted); padding: 5px 10px; background: #fff; border-radius: 999px; border: 1px dashed #cfd8e0; }
+
+/* 步骤 */
+.step-list { overflow-y: auto; flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 2px; }
 .step-item {
-  padding: 8px 10px;
-  border-radius: 4px;
-  margin-bottom: 4px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: background 0.2s;
+  display: flex; gap: 8px; align-items: baseline;
+  padding: 6px 8px; border-radius: 6px; cursor: pointer; color: #4a555f;
+  font-size: 12.5px; line-height: 1.45;
 }
-.step-item:hover { background: #f0f0f0; }
-.step-item.done { color: #27ae60; }
-.step-item.current { background: #e3f2fd; color: #2980b9; font-weight: 600; }
+.step-item:hover { background: #f4f7fa; }
+.step-item .idx {
+  flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%;
+  background: #eef2f6; color: #8b97a3; font-size: 10.5px;
+  display: inline-flex; align-items: center; justify-content: center;
+  transform: translateY(2px);
+}
+.step-item.done { color: #8b97a3; }
+.step-item.done .idx { background: #e6f4ec; color: #2e8b57; }
+.step-item.current { background: #e8f1f8; color: var(--blue-d); font-weight: 600; }
+.step-item.current .idx { background: var(--blue); color: #fff; }
 
+.step-title { font-size: 13.5px; font-weight: 600; color: var(--blue-d); }
 .step-desc {
-  background: #f8f9fa;
-  padding: 12px;
-  border-radius: 6px;
-  font-size: 14px;
-  line-height: 1.6;
-  min-height: 60px;
+  font-size: 13px; line-height: 1.75; color: #3d4752;
+  background: #fafbfc; border: 1px solid #eef1f4; border-radius: 8px;
+  padding: 11px 12px; overflow-y: auto; flex: 1; min-height: 80px;
 }
 
+/* 底栏 */
 footer {
-  background: #fff;
-  border-top: 1px solid #e0e0e0;
-  padding: 12px 20px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  background: #fff; border-top: 1px solid var(--line);
+  padding: 9px 16px; display: flex; align-items: center; gap: 10px; flex-shrink: 0;
 }
-.speed-control {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-left: 12px;
-  font-size: 13px;
+.btn-control {
+  background: #fff; border: 1px solid #dbe1e7; padding: 7px 15px;
+  border-radius: 7px; cursor: pointer; font-size: 13px; color: #39424c;
+  transition: all .12s;
 }
-.speed-control select {
-  padding: 4px 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-.step-progress { margin-left: auto; font-size: 14px; color: #666; }
+.btn-control:hover:not(:disabled) { background: #f5f8fa; border-color: #c9d2da; }
+.btn-control:disabled { opacity: .38; cursor: not-allowed; }
+.btn-control.btn-primary { background: var(--blue); color: #fff; border-color: var(--blue); min-width: 92px; }
+.btn-control.btn-primary:hover:not(:disabled) { background: var(--blue-d); }
+.speed-control { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted); margin-left: 6px; }
+.speed-control select { padding: 4px 6px; border: 1px solid #dbe1e7; border-radius: 5px; color: #39424c; }
+.step-progress { margin-left: auto; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
 
+/* 弹窗 */
 .modal {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
+  position: fixed; inset: 0; background: rgba(18,24,30,.42);
+  display: flex; align-items: center; justify-content: center; z-index: 100;
 }
 .modal.hidden { display: none; }
 .modal-content {
-  background: #fff;
-  padding: 24px;
-  border-radius: 12px;
-  width: 400px;
-  max-width: 90%;
+  background: #fff; padding: 22px; border-radius: 12px; width: 420px; max-width: 92%;
+  box-shadow: 0 18px 50px rgba(0,0,0,.2);
 }
-.modal-content h2 { margin-bottom: 16px; font-size: 18px; }
-.modal-content label {
-  display: block;
-  font-size: 13px;
-  color: #666;
-  margin: 12px 0 4px;
-}
+.modal-content h2 { font-size: 17px; margin-bottom: 6px; }
+.modal-content label { display: block; font-size: 12px; color: var(--muted); margin: 12px 0 4px; }
 .modal-content input {
-  width: 100%;
-  padding: 8px 10px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 14px;
+  width: 100%; padding: 8px 10px; border: 1px solid #dbe1e7;
+  border-radius: 7px; font-size: 13px; outline: none;
 }
-.modal-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 20px;
-  justify-content: flex-end;
-}
-.modal-actions .btn-secondary { background: #f0f0f0; color: #333; border: none; }
+.modal-content input:focus { border-color: var(--blue); }
+.modal-actions { display: flex; gap: 8px; margin-top: 18px; justify-content: flex-end; }
+.modal-actions .btn-primary { width: auto; }
 
 .overlay {
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(255,255,255,0.9);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
+  position: absolute; inset: 0; background: rgba(255,255,255,.86);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 12px; z-index: 20; border-radius: 6px; font-size: 13px; color: var(--muted);
 }
 .overlay.hidden { display: none; }
 .spinner {
-  width: 40px; height: 40px;
-  border: 4px solid #e0e0e0;
-  border-top-color: #3498db;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+  width: 34px; height: 34px; border: 3px solid #e3e8ee; border-top-color: var(--blue);
+  border-radius: 50%; animation: spin .8s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.params-display {
-  font-size: 13px;
-  color: #555;
-  line-height: 1.8;
-  font-family: monospace;
-  background: #f8f9fa;
-  padding: 8px;
-  border-radius: 4px;
+@media (max-width: 1100px) {
+  .sidebar { width: 190px; }
+  .sidebar.right { width: 230px; }
 }
   </style>
 </head>
 <body>
   <header>
-    <h1>机械制图过程演示</h1>
+    <div class="brand">
+      <span class="logo">▱</span>
+      <div>
+        <h1>机械制图过程演示</h1>
+        <p class="sub">点线面投影 · 三视图 · 截交相贯 · 组合体 · 轴测图 · 几何作图</p>
+      </div>
+    </div>
     <button id="btn-settings" class="btn-secondary">⚙ API 设置</button>
   </header>
 
   <main>
     <aside class="sidebar">
       <div class="panel">
-        <h3>1. 上传零件图</h3>
+        <h3>上传题目照片</h3>
         <input type="file" id="file-input" accept="image/*" hidden>
-        <button id="btn-upload" class="btn-primary">📷 拍照 / 上传图片</button>
-        <p class="hint">支持轴类、法兰盘、支架等简单零件</p>
+        <button id="btn-upload" class="btn-primary">📷 拍照 / 上传题目</button>
+        <p class="hint">AI 识别题型与尺寸，自动生成作图步骤</p>
       </div>
 
-      <div class="panel">
-        <h3>2. 或手动选择模板</h3>
-        <div id="template-list" class="template-list">
-          <button class="template-item" data-template="shaft">阶梯轴</button>
-          <button class="template-item" data-template="flange">法兰盘</button>
-          <button class="template-item" data-template="bracket">支架</button>
-        </div>
+      <div class="panel grow">
+        <h3>题型库</h3>
+        <div id="template-list" class="template-list"></div>
       </div>
 
-      <div class="panel">
-        <h3>当前零件</h3>
-        <div id="current-part-name">未选择</div>
-        <div id="current-part-params" class="params-display"></div>
+      <div class="panel last">
+        <h3>当前题目</h3>
+        <div id="current-part-name" class="current-name">—</div>
       </div>
     </aside>
 
     <section class="canvas-area">
-      <canvas id="canvas" width="900" height="550"></canvas>
+      <canvas id="canvas"></canvas>
+      <div id="variant-bar" class="variant-bar hidden"></div>
       <div id="overlay-loading" class="overlay hidden">
         <div class="spinner"></div>
-        <p>AI 正在识图中...</p>
+        <p>AI 正在识图...</p>
       </div>
     </section>
 
     <aside class="sidebar right">
       <div class="panel">
-        <h3>绘制步骤</h3>
-        <div id="step-list" class="step-list">
-          <p class="hint">上传图片或选择模板后开始</p>
-        </div>
+        <h3>作图步骤</h3>
+        <div id="step-list" class="step-list"></div>
       </div>
-      <div class="panel">
-        <h3>当前讲解</h3>
-        <div id="step-desc" class="step-desc">—</div>
+      <div class="panel grow">
+        <h3>本步讲解</h3>
+        <div id="step-title" class="step-title">—</div>
+        <div id="step-desc" class="step-desc">选择一个题型开始</div>
       </div>
     </aside>
   </main>
@@ -302,31 +266,29 @@ footer {
     <button id="btn-play" class="btn-control btn-primary" disabled>▶ 播放</button>
     <button id="btn-next" class="btn-control" disabled>下一步 ⏭</button>
     <div class="speed-control">
-      <label>速度：</label>
+      <label>速度</label>
       <select id="speed-select">
         <option value="0.5">0.5x</option>
         <option value="1" selected>1x</option>
         <option value="2">2x</option>
-        <option value="4">4x</option>
+        <option value="3">3x</option>
       </select>
     </div>
-    <div class="step-progress">
-      <span id="step-current">0</span> / <span id="step-total">0</span>
-    </div>
+    <div class="step-progress"><span id="step-current">0</span> / <span id="step-total">0</span></div>
   </footer>
 
   <div id="settings-modal" class="modal hidden">
     <div class="modal-content">
       <h2>API 设置</h2>
-      <p class="hint">你的 API Key 只存在浏览器本地，不会上传。</p>
+      <p class="hint">API Key 只保存在浏览器本地，不会上传到任何服务器。</p>
       <label>API Base URL</label>
       <input type="text" id="cfg-baseurl" placeholder="https://api.openai.com/v1" value="https://api.openai.com/v1">
       <label>API Key</label>
       <input type="password" id="cfg-apikey" placeholder="sk-...">
-      <label>模型名称</label>
+      <label>模型名称（需支持图片输入）</label>
       <input type="text" id="cfg-model" placeholder="gpt-4o" value="gpt-4o">
       <div class="modal-actions">
-        <button id="btn-cancel-settings" class="btn-secondary">取消</button>
+        <button id="btn-cancel-settings" class="btn-secondary dark">取消</button>
         <button id="btn-save-settings" class="btn-primary">保存</button>
       </div>
     </div>
@@ -346,463 +308,2021 @@ const AppConfig = {
   get hasApiKey() { return !!this.apiKey }
 }
 
-  // ===== js/templates.js =====
-const Templates = {
-  shaft(params) {
-    const segs = params.segments || [{diameter:20,length:60},{diameter:30,length:80},{diameter:25,length:50}]
-    const totalLen = segs.reduce((s, x) => s + x.length, 0)
-    const startX = (900 - totalLen * 3) / 2
-    const centerY = 280
-    const scale = 3
-    const steps = []
+  // ===== js/paper.js =====
+/* Paper — 2D 图纸模型
+ * 所有模板统一产出 paper 元素（单位 mm，y 轴向上）
+ * 元素类型：line / poly / circle / arc / dot / text / arrow
+ */
+const Paper = (() => {
+  const ST = {
+    solid:  { w: 0.6,  dash: [] },              // 粗实线：可见轮廓
+    thick:  { w: 0.9,  dash: [] },              // 加粗：图形答案
+    thin:   { w: 0.15, dash: [] },              // 细实线：作图线/投影线
+    hidden: { w: 0.3,  dash: [2.6, 1.3] },      // 细虚线
+    center: { w: 0.15, dash: [9, 1.4, 1.4, 1.4] }, // 点划线
+  }
+  const C = {
+    ink:  '#1a1a1a',
+    con:  '#9aa3ad',   // 作图辅助线
+    pick: '#c0392b',   // 求解结果/强调
+    aux:  '#2c6fbb',   // 给定条件
+    dim:  '#33404d',
+  }
+  let _id = 0
 
-    steps.push({
-      desc: '第一步：画水平中心线作为基准。用细点划线，超出轮廓两端各 5~10mm。',
-      elements: [{ type: 'centerline', x1: startX - 20, y1: centerY, x2: startX + totalLen * scale + 20, y2: centerY }]
-    })
+  const P = {
+    add: (a, b) => [a[0] + b[0], a[1] + b[1]],
+    sub: (a, b) => [a[0] - b[0], a[1] - b[1]],
+    mul: (a, k) => [a[0] * k, a[1] * k],
+    len: a => Math.hypot(a[0], a[1]),
+    unit: a => { const l = Math.hypot(a[0], a[1]) || 1; return [a[0] / l, a[1] / l] },
+    rot: (a, ang) => [a[0] * Math.cos(ang) - a[1] * Math.sin(ang), a[0] * Math.sin(ang) + a[1] * Math.cos(ang)],
+    mid: (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2],
+  }
 
-    let x = startX
-    segs.forEach((seg, i) => {
-      const w = seg.length * scale
-      const h = seg.diameter * scale
-      steps.push({
-        desc: `第${i+2}步：画第 ${i+1} 段轴，直径 Ø${seg.diameter}，长度 ${seg.length}。粗实线，从中心线上下对称画出。`,
-        elements: [{ type: 'rect', x: x, y: centerY - h/2, w: w, h: h }]
-      })
-      x += w
-    })
+  // ---------- 基础图元 ----------
+  function line(a, b, st = 'solid', o = {}) {
+    return { t: 'line', a, b, st, id: ++_id, ...o }
+  }
+  function poly(pts, st = 'solid', closed = false, o = {}) {
+    return { t: 'poly', pts, closed, st, id: ++_id, ...o }
+  }
+  function circle(c, r, st = 'solid', o = {}) {
+    return { t: 'circle', c, r, st, id: ++_id, ...o }
+  }
+  function arc(c, r, a0, a1, st = 'solid', o = {}) {
+    return { t: 'arc', c, r, a0, a1, st, id: ++_id, ...o }
+  }
+  function dot(p, o = {}) {
+    return { t: 'dot', p, r: 0.55, id: ++_id, ...o }
+  }
+  function text(p, s, o = {}) {
+    return { t: 'text', p, s, size: 3.0, anchor: 'middle', id: ++_id, ...o }
+  }
+  function arrow(tip, from, o = {}) {
+    return { t: 'arrow', tip, from, id: ++_id, ...o }
+  }
 
-    if (params.hasChamfer) {
-      const c = 2
-      steps.push({
-        desc: `第${steps.length+1}步：画倒角 C${c}。在轴端 45° 切角。`,
-        elements: [
-          { type: 'line', x1: startX, y1: centerY - segs[0].diameter*scale/2, x2: startX + c*scale, y2: centerY - segs[0].diameter*scale/2 + c*scale },
-          { type: 'line', x1: startX, y1: centerY + segs[0].diameter*scale/2, x2: startX + c*scale, y2: centerY + segs[0].diameter*scale/2 - c*scale }
-        ]
-      })
+  // 圆弧采样（用于导出/预览）
+  function arcPts(c, r, a0, a1, step = 0.06) {
+    let d = a1 - a0
+    if (d < 0) d += Math.PI * 2
+    const n = Math.max(6, Math.ceil(d / step))
+    const out = []
+    for (let i = 0; i <= n; i++) {
+      const a = a0 + (d * i) / n
+      out.push([c[0] + r * Math.cos(a), c[1] + r * Math.sin(a)])
     }
+    return out
+  }
 
-    if (params.hasKeyway) {
-      const keySeg = segs[1] || segs[0]
-      const keyX = startX + (segs[0]?.length || 0) * scale + 20
-      steps.push({
-        desc: `第${steps.length+1}步：画键槽。宽 6mm，深 3mm，位于轴段上方。`,
-        elements: [{ type: 'rect', x: keyX, y: centerY - keySeg.diameter*scale/2 - 10, w: 40, h: 10 }]
-      })
+  // ---------- 尺寸标注 ----------
+  // 箭头长度（mm）
+  const AH = 2.4, AW = 0.8
+
+  function _arrowAt(tip, dir) { // dir 指向箭头尖端方向
+    const d = P.unit(dir), n = [-d[1], d[0]]
+    return poly([
+      tip,
+      [tip[0] - d[0] * AH + n[0] * AW, tip[1] - d[1] * AH + n[1] * AW],
+      [tip[0] - d[0] * AH - n[0] * AW, tip[1] - d[1] * AH - n[1] * AW],
+    ], 'dim', true, { fill: true, color: C.dim, noAnim: true, w: 0.15 })
+  }
+
+  // 水平尺寸：x1→x2，标注线在 y
+  function dimH(x1, x2, y, txt, o = {}) {
+    const els = [], s = o.size || 3.0, dir = x2 >= x1 ? 1 : -1
+    const y0 = o.from ?? y
+    els.push(line([x1, y0 + (o.gap ?? 1.2) * Math.sign(y - y0 || 1)], [x1, y + (y > y0 ? 1.5 : -1.5) * 0 + (y > y0 ? 1.5 : -1.5) * 0 + (y > y0 ? 1.5 : -1.5)], 'thin', { color: C.dim, noAnim: true }))
+    els.push(line([x2, y0 + (o.gap ?? 1.2) * Math.sign(y - y0 || 1)], [x2, y + (y > y0 ? 1.5 : -1.5)], 'thin', { color: C.dim, noAnim: true }))
+    els.push(line([x1, y], [x2, y], 'dim', { color: C.dim, noAnim: true }))
+    els.push(_arrowAt([x2, y], [dir, 0]), _arrowAt([x1, y], [-dir, 0]))
+    els.push(text([(x1 + x2) / 2, y + 1.9], txt, { size: s, color: C.dim, noAnim: true }))
+    return els
+  }
+
+  // 竖直尺寸
+  function dimV(y1, y2, x, txt, o = {}) {
+    const els = [], s = o.size || 3.0, dir = y2 >= y1 ? 1 : -1
+    const x0 = o.from ?? x
+    els.push(line([x0 + (o.gap ?? 1.2) * Math.sign(x - x0 || 1), y1], [x + (x > x0 ? 1.5 : -1.5), y1], 'thin', { color: C.dim, noAnim: true }))
+    els.push(line([x0 + (o.gap ?? 1.2) * Math.sign(x - x0 || 1), y2], [x + (x > x0 ? 1.5 : -1.5), y2], 'thin', { color: C.dim, noAnim: true }))
+    els.push(line([x, y1], [x, y2], 'dim', { color: C.dim, noAnim: true }))
+    els.push(_arrowAt([x, y2], [0, dir]), _arrowAt([x, y1], [0, -dir]))
+    els.push(text([x - 1.4, (y1 + y2) / 2], txt, { size: s, color: C.dim, rot: -Math.PI / 2, noAnim: true }))
+    return els
+  }
+
+  // 斜向尺寸（对齐标注）
+  function dimAligned(a, b, off, txt, o = {}) {
+    const els = [], s = o.size || 3.0
+    const d = P.unit(P.sub(b, a)), n = [-d[1], d[0]]
+    const pa = P.add(a, P.mul(n, off)), pb = P.add(b, P.mul(n, off))
+    els.push(line(a, P.add(pa, P.mul(n, off > 0 ? 1.4 : -1.4)), 'thin', { color: C.dim, noAnim: true }))
+    els.push(line(b, P.add(pb, P.mul(n, off > 0 ? 1.4 : -1.4)), 'thin', { color: C.dim, noAnim: true }))
+    els.push(line(pa, pb, 'dim', { color: C.dim, noAnim: true }))
+    els.push(_arrowAt(pb, d), _arrowAt(pa, P.mul(d, -1)))
+    els.push(text(P.add(P.mid(pa, pb), P.mul(n, off > 0 ? 1.9 : -1.9)), txt,
+      { size: s, color: C.dim, rot: Math.atan2(d[1], d[0]), noAnim: true }))
+    return els
+  }
+
+  // 半径标注：从圆心指向圆周
+  function dimR(c, r, ang, txt, o = {}) {
+    const els = [], s = o.size || 3.0
+    const p = [c[0] + r * Math.cos(ang), c[1] + r * Math.sin(ang)]
+    const inner = [c[0] + r * 0.45 * Math.cos(ang), c[1] + r * 0.45 * Math.sin(ang)]
+    const out = [c[0] + (r + 9) * Math.cos(ang), c[1] + (r + 9) * Math.sin(ang)]
+    els.push(line(p, inner, 'dim', { color: C.dim, noAnim: true }))
+    els.push(_arrowAt(p, [Math.cos(ang), Math.sin(ang)]))
+    els.push(line([c[0] + r * 0.18 * Math.cos(ang), c[1] + r * 0.18 * Math.sin(ang)], out, 'thin',
+      { color: C.dim, dash: [2, 1], noAnim: true }))
+    const tp = [c[0] + (r + 10.5) * Math.cos(ang), c[1] + (r + 10.5) * Math.sin(ang)]
+    els.push(text(tp, txt, { size: s, color: C.dim, anchor: Math.cos(ang) > 0.2 ? 'start' : Math.cos(ang) < -0.2 ? 'end' : 'middle', noAnim: true }))
+    return els
+  }
+
+  // 直径标注
+  function dimD(c, r, ang, txt, o = {}) {
+    const els = [], s = o.size || 3.0
+    const a = [c[0] - r * Math.cos(ang), c[1] - r * Math.sin(ang)]
+    const b = [c[0] + r * Math.cos(ang), c[1] + r * Math.sin(ang)]
+    els.push(line(a, b, 'dim', { color: C.dim, noAnim: true }))
+    els.push(_arrowAt(b, [Math.cos(ang), Math.sin(ang)]), _arrowAt(a, [-Math.cos(ang), -Math.sin(ang)]))
+    const tp = [c[0] + (r + 3) * Math.cos(ang), c[1] + (r + 3) * Math.sin(ang)]
+    els.push(text(tp, txt, { size: s, color: C.dim, anchor: 'middle', noAnim: true }))
+    return els
+  }
+
+  // 引出标注（文字带折线）
+  function leader(p, dir, txt, o = {}) {
+    const els = [], s = o.size || 3.0, L = o.len || 10
+    const d = P.unit(dir), knee = P.add(p, P.mul(d, L)), end = P.add(knee, [d[0] > 0 ? 6 : -6, 0])
+    els.push(poly([p, knee, end], 'thin', false, { color: C.dim, noAnim: true }))
+    els.push(arrow(p, knee, { color: C.dim, noAnim: true }))
+    els.push(text([end[0] + (d[0] > 0 ? 0.8 : -0.8), end[1] + 1.1], txt,
+      { size: s, anchor: d[0] > 0 ? 'start' : 'end', color: C.dim, noAnim: true }))
+    return els
+  }
+
+  // 点标记 + 投影连线
+  function pointMark(p, label, o = {}) {
+    const els = []
+    const col = o.color || (o.hidden ? C.aux : C.pick)
+    els.push(dot(p, { color: col, hollow: !!o.hidden, r: o.r || 0.62, noAnim: true }))
+    if (label) {
+      const off = o.off || [1.6, 1.6]
+      els.push(text([p[0] + off[0], p[1] + off[1]], o.hidden ? `(${label})` : label,
+        { size: o.size || 3.2, color: col, anchor: o.anchor || 'start', noAnim: true, italic: true }))
     }
+    return els
+  }
 
-    let dimX = startX
-    segs.forEach((seg, i) => {
-      const w = seg.length * scale
-      steps.push({
-        desc: `第${steps.length+1}步：标注第 ${i+1} 段的直径 Ø${seg.diameter} 和长度 ${seg.length}。`,
-        elements: [
-          { type: 'dim', x1: dimX, y1: centerY - seg.diameter*scale/2 - 25, x2: dimX + w, y2: centerY - seg.diameter*scale/2 - 25, text: String(seg.length) },
-          { type: 'dim', x1: dimX + w/2, y1: centerY - seg.diameter*scale/2 - 45, x2: dimX + w/2, y2: centerY - seg.diameter*scale/2, text: `Ø${seg.diameter}` }
-        ]
-      })
-      dimX += w
-    })
-    return steps
-  },
-
-  flange(params) {
-    const od = params.outerDiameter || 80
-    const id = params.innerDiameter || 40
-    const bc = params.boltCircle || 60
-    const n = params.boltCount || 4
-    const bd = params.boltDiameter || 8
-    const cx = 450, cy = 280, scale = 3
-    const steps = []
-
-    steps.push({
-      desc: '第一步：画十字中心线。水平和垂直点划线交点为圆心。',
-      elements: [
-        { type: 'centerline', x1: cx - od*scale, y1: cy, x2: cx + od*scale, y2: cy },
-        { type: 'centerline', x1: cx, y1: cy - od*scale, x2: cx, y2: cy + od*scale }
-      ]
-    })
-    steps.push({
-      desc: `第二步：画法兰外圆 Ø${od}。粗实线圆。`,
-      elements: [{ type: 'circle', cx, cy, r: od*scale/2 }]
-    })
-    steps.push({
-      desc: `第三步：画内孔 Ø${id}。与外圆同心。`,
-      elements: [{ type: 'circle', cx, cy, r: id*scale/2 }]
-    })
-    steps.push({
-      desc: `第四步：画螺栓孔中心圆（点划线），Ø${bc}。`,
-      elements: [{ type: 'circle', cx, cy, r: bc*scale/2, dashed: true }]
-    })
-    const angles = []
-    for (let i = 0; i < n; i++) angles.push((i * 2 * Math.PI) / n - Math.PI/2)
-    steps.push({
-      desc: `第五步：在螺栓孔中心圆上均匀分布 ${n} 个螺栓孔 Ø${bd}。`,
-      elements: angles.map(a => ({
-        type: 'circle',
-        cx: cx + (bc*scale/2) * Math.cos(a),
-        cy: cy + (bc*scale/2) * Math.sin(a),
-        r: bd*scale/2
-      }))
-    })
-    steps.push({
-      desc: '第六步：标注各尺寸——外径、内径、螺栓孔分布圆和螺栓孔直径。',
-      elements: [
-        { type: 'dim', x1: cx - od*scale/2, y1: cy - od*scale/2 - 30, x2: cx + od*scale/2, y2: cy - od*scale/2 - 30, text: `Ø${od}` },
-        { type: 'dim', x1: cx - id*scale/2, y1: cy + id*scale/2 + 20, x2: cx + id*scale/2, y2: cy + id*scale/2 + 20, text: `Ø${id}` }
-      ]
-    })
-    return steps
-  },
-
-  bracket(params) {
-    const bl = params.baseLength || 60
-    const bw = params.baseWidth || 12
-    const h = params.height || 50
-    const hd = params.holeDiameter || 10
-    const ho = params.holeOffset || 20
-    const ox = 250, oy = 350, scale = 3
-    const steps = []
-
-    steps.push({
-      desc: '第一步：画底面基准线和左侧竖直线作为定位。',
-      elements: [
-        { type: 'line', x1: ox - 20, y1: oy, x2: ox + bl*scale + 20, y2: oy },
-        { type: 'line', x1: ox, y1: oy + 20, x2: ox, y2: oy - h*scale - 20 }
-      ]
-    })
-    steps.push({
-      desc: `第二步：画底板轮廓，长 ${bl}mm，厚 ${bw}mm。`,
-      elements: [{ type: 'rect', x: ox, y: oy - bw*scale, w: bl*scale, h: bw*scale }]
-    })
-    steps.push({
-      desc: `第三步：画竖板轮廓，高 ${h}mm，与底板左侧对齐。`,
-      elements: [{ type: 'rect', x: ox, y: oy - h*scale - bw*scale, w: bw*scale, h: h*scale }]
-    })
-    steps.push({
-      desc: `第四步：画竖板上的安装孔 Ø${hd}，距底面 ${ho}mm。`,
-      elements: [
-        { type: 'centerline', x1: ox + bw*scale/2 - 15, y1: oy - bw*scale - ho*scale, x2: ox + bw*scale/2 + 15, y2: oy - bw*scale - ho*scale },
-        { type: 'centerline', x1: ox + bw*scale/2, y1: oy - bw*scale - ho*scale - 15, x2: ox + bw*scale/2, y2: oy - bw*scale - ho*scale + 15 },
-        { type: 'circle', cx: ox + bw*scale/2, cy: oy - bw*scale - ho*scale, r: hd*scale/2 }
-      ]
-    })
-    steps.push({
-      desc: '第五步：标注底板长度、高度和孔的尺寸。',
-      elements: [
-        { type: 'dim', x1: ox, y1: oy + 20, x2: ox + bl*scale, y2: oy + 20, text: String(bl) },
-        { type: 'dim', x1: ox - 30, y1: oy - bw*scale, x2: ox - 30, y2: oy - h*scale - bw*scale, text: String(h) }
-      ]
-    })
-    return steps
-  },
-
-  generate(type, params) {
-    if (type === 'shaft') return this.shaft(params)
-    if (type === 'flange') return this.flange(params)
-    if (type === 'bracket') return this.bracket(params)
+  // ---------- 包围盒 ----------
+  function elPts(e) {
+    if (e.t === 'line') return [e.a, e.b]
+    if (e.t === 'arrow') return [e.tip, e.from]
+    if (e.t === 'poly') return e.pts
+    if (e.t === 'circle') return [[e.c[0] - e.r, e.c[1] - e.r], [e.c[0] + e.r, e.c[1] + e.r]]
+    if (e.t === 'arc') return arcPts(e.c, e.r, e.a0, e.a1)
+    if (e.t === 'dot') return [e.p]
+    if (e.t === 'text') {
+      const n = (e.s || '').length * (e.size || 3) * 0.55
+      const w = e.anchor === 'start' ? [0, n] : e.anchor === 'end' ? [-n, 0] : [-n / 2, n / 2]
+      return [[e.p[0] + w[0], e.p[1] - 1], [e.p[0] + w[1], e.p[1] + 1]]
+    }
     return []
   }
-}
+  function bbox(els) {
+    let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9
+    els.forEach(e => elPts(e).forEach(p => {
+      x0 = Math.min(x0, p[0]); y0 = Math.min(y0, p[1])
+      x1 = Math.max(x1, p[0]); y1 = Math.max(y1, p[1])
+    }))
+    return { x0, y0, x1, y1, w: x1 - x0, h: y1 - y0 }
+  }
+
+  return {
+    ST, C, P, line, poly, circle, arc, dot, text, arrow, arcPts, bbox,
+    dimH, dimV, dimAligned, dimR, dimD, leader, pointMark, eps: 1e-9,
+  }
+})()
+
+  // ===== js/geom3d.js =====
+/* GEO — 三维几何内核
+ * 网格 → 三视图/轴测图投影 → 隐藏线消除（HLR）
+ * 所有实体统一为 {verts:[[x,y,z]...], faces:[[i,j,k...]...], name}
+ */
+const GEO = (() => {
+  const EPS = 1e-9
+  const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]]
+  const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]]
+  const mul = (a, k) => [a[0] * k, a[1] * k, a[2] * k]
+  const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
+  const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]
+  const vlen = a => Math.hypot(a[0], a[1], a[2])
+  const unit = a => { const l = vlen(a) || 1; return [a[0] / l, a[1] / l, a[2] / l] }
+  const lerp3 = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]
+  const TAU = Math.PI * 2
+
+  const mesh = (verts, faces, o = {}) => ({ verts, faces, ...o })
+
+  // 面法向（Newell）
+  function faceNormal(verts, f) {
+    let n = [0, 0, 0]
+    for (let i = 0; i < f.length; i++) {
+      const a = verts[f[i]], b = verts[f[(i + 1) % f.length]]
+      n[0] += (a[1] - b[1]) * (a[2] + b[2])
+      n[1] += (a[2] - b[2]) * (a[0] + b[0])
+      n[2] += (a[0] - b[0]) * (a[1] + b[1])
+    }
+    const l = vlen(n) || 1
+    return [n[0] / l, n[1] / l, n[2] / l]
+  }
+  function faceCenter(verts, f) {
+    let c = [0, 0, 0]
+    f.forEach(i => { c = add(c, verts[i]) })
+    return mul(c, 1 / f.length)
+  }
+  // 凸实体：统一法向朝外
+  function orientOut(m) {
+    let c = [0, 0, 0]
+    m.verts.forEach(v => { c = add(c, v) })
+    c = mul(c, 1 / m.verts.length)
+    m.faces.forEach((f, i) => {
+      const n = faceNormal(m.verts, f)
+      if (dot(n, sub(faceCenter(m.verts, f), c)) < 0) m.faces[i] = f.slice().reverse()
+    })
+    return m
+  }
+
+  // ---------------- 基本体 ----------------
+  function prism({ n = 6, R = 30, h = 50, rot = Math.PI / 2, cx = 0, cy = 0, z0 = 0 }) {
+    const verts = [], faces = []
+    for (let i = 0; i < n; i++) verts.push([cx + R * Math.cos(rot + i * TAU / n), cy + R * Math.sin(rot + i * TAU / n), z0])
+    for (let i = 0; i < n; i++) verts.push([cx + R * Math.cos(rot + i * TAU / n), cy + R * Math.sin(rot + i * TAU / n), z0 + h])
+    faces.push([...Array(n).keys()].reverse())
+    faces.push([...Array(n).keys()].map(i => i + n))
+    for (let i = 0; i < n; i++) { const j = (i + 1) % n; faces.push([i, j, j + n, i + n]) }
+    return orientOut(mesh(verts, faces))
+  }
+
+  function pyramid({ n = 4, R = 30, h = 50, rot = Math.PI / 4, z0 = 0, cx = 0, cy = 0 }) {
+    const verts = [], faces = []
+    for (let i = 0; i < n; i++) verts.push([cx + R * Math.cos(rot + i * TAU / n), cy + R * Math.sin(rot + i * TAU / n), z0])
+    const apex = verts.length
+    verts.push([cx, cy, z0 + h])
+    faces.push([...Array(n).keys()].reverse())
+    for (let i = 0; i < n; i++) faces.push([i, (i + 1) % n, apex])
+    return orientOut(mesh(verts, faces))
+  }
+
+  function frustum({ n = 4, R1 = 30, R2 = 16, h = 40, rot = Math.PI / 4, z0 = 0 }) {
+    const verts = [], faces = []
+    for (let i = 0; i < n; i++) verts.push([R1 * Math.cos(rot + i * TAU / n), R1 * Math.sin(rot + i * TAU / n), z0])
+    for (let i = 0; i < n; i++) verts.push([R2 * Math.cos(rot + i * TAU / n), R2 * Math.sin(rot + i * TAU / n), z0 + h])
+    faces.push([...Array(n).keys()].reverse())
+    faces.push([...Array(n).keys()].map(i => i + n))
+    for (let i = 0; i < n; i++) { const j = (i + 1) % n; faces.push([i, j, j + n, i + n]) }
+    return orientOut(mesh(verts, faces))
+  }
+
+  function cylinder({ r = 20, h = 40, seg = 72, z0 = 0, cx = 0, cy = 0 }) {
+    return prism({ n: seg, R: r, h, rot: 0, cx, cy, z0 })
+  }
+
+  function cone({ r = 20, h = 40, seg = 72, z0 = 0 }) {
+    const verts = [], faces = []
+    for (let i = 0; i < seg; i++) verts.push([r * Math.cos(i * TAU / seg), r * Math.sin(i * TAU / seg), z0])
+    const apex = verts.length
+    verts.push([0, 0, z0 + h])
+    faces.push([...Array(seg).keys()].reverse())
+    for (let i = 0; i < seg; i++) faces.push([i, (i + 1) % seg, apex])
+    return orientOut(mesh(verts, faces))
+  }
+
+  function sphere({ r = 20, seg = 48, rings = 26, c = [0, 0, 0] }) {
+    const verts = [], faces = []
+    for (let j = 0; j <= rings; j++) {
+      const phi = Math.PI * j / rings
+      for (let i = 0; i < seg; i++) {
+        const th = TAU * i / seg
+        verts.push([c[0] + r * Math.sin(phi) * Math.cos(th), c[1] + r * Math.sin(phi) * Math.sin(th), c[2] + r * Math.cos(phi)])
+      }
+    }
+    const idx = (i, j) => j * seg + ((i + seg) % seg)
+    for (let j = 0; j < rings; j++) for (let i = 0; i < seg; i++) {
+      if (j === 0) faces.push([idx(i, 0), idx(i + 1, 0), idx(i, 1)])
+      else if (j === rings - 1) faces.push([idx(i, j), idx(i + 1, j), idx(i + 1, j + 1)])
+      else faces.push([idx(i, j), idx(i + 1, j), idx(i + 1, j + 1), idx(i, j + 1)])
+    }
+    return orientOut(mesh(verts, faces))
+  }
+
+  function box({ x0 = 0, y0 = 0, z0 = 0, L = 10, W = 10, H = 10 }) {
+    const v = [
+      [x0, y0, z0], [x0 + L, y0, z0], [x0 + L, y0 + W, z0], [x0, y0 + W, z0],
+      [x0, y0, z0 + H], [x0 + L, y0, z0 + H], [x0 + L, y0 + W, z0 + H], [x0, y0 + W, z0 + H],
+    ]
+    const f = [[0, 3, 2, 1], [4, 5, 6, 7], [0, 1, 5, 4], [1, 2, 6, 5], [2, 3, 7, 6], [3, 0, 4, 7]]
+    return mesh(v, f)
+  }
+
+  /* 拉伸：profile 为平面多边形点列
+   * axis='y' → profile 在 (x,z) 平面，沿 y 拉伸 [from,from+depth]
+   * axis='z' → profile 在 (x,y) 平面，沿 z 拉伸
+   */
+  function extrude({ profile, axis = 'y', from = 0, depth = 20 }) {
+    const pts = profile.slice()
+    // 保证逆时针
+    let area = 0
+    for (let i = 0; i < pts.length; i++) {
+      const a = pts[i], b = pts[(i + 1) % pts.length]
+      area += a[0] * b[1] - b[0] * a[1]
+    }
+    if (area < 0) pts.reverse()
+    const n = pts.length, verts = [], faces = []
+    const to3 = (p, t) => axis === 'y' ? [p[0], t, p[1]] : [p[0], p[1], t]
+    pts.forEach(p => verts.push(to3(p, from)))
+    pts.forEach(p => verts.push(to3(p, from + depth)))
+    faces.push([...Array(n).keys()].reverse())          // 起始端面
+    faces.push([...Array(n).keys()].map(i => i + n))    // 终止端面
+    for (let i = 0; i < n; i++) { const j = (i + 1) % n; faces.push([i, j, j + n, i + n]) }
+    const m = mesh(verts, faces)
+    // 端面法向校正
+    const want0 = axis === 'y' ? [0, -1, 0] : [0, 0, -1]
+    const want1 = mul(want0, -1)
+    if (dot(faceNormal(verts, m.faces[0]), want0) < 0) m.faces[0].reverse()
+    if (dot(faceNormal(verts, m.faces[1]), want1) < 0) m.faces[1].reverse()
+    // 侧面法向校正
+    let c = [0, 0, 0]; verts.forEach(v => c = add(c, v)); c = mul(c, 1 / verts.length)
+    for (let i = 2; i < m.faces.length; i++) {
+      if (dot(faceNormal(verts, m.faces[i]), sub(faceCenter(verts, m.faces[i]), c)) < 0) m.faces[i].reverse()
+    }
+    return m
+  }
+
+  // ---------------- 边 ----------------
+  function buildEdges(m, creaseDeg = 14) {
+    const map = new Map(), out = []
+    for (let fi = 0; fi < m.faces.length; fi++) {
+      const f = m.faces[fi], n = faceNormal(m.verts, f)
+      for (let k = 0; k < f.length; k++) {
+        const a = f[k], b = f[(k + 1) % f.length]
+        const key = a < b ? `${a}_${b}` : `${b}_${a}`
+        let e = map.get(key)
+        if (!e) { e = { a: Math.min(a, b), b: Math.max(a, b), n: [] }; map.set(key, e) }
+        e.n.push(n)
+      }
+    }
+    const cosT = Math.cos(creaseDeg * Math.PI / 180)
+    map.forEach(e => {
+      e.feature = e.n.length === 1 || (e.n.length >= 2 && dot(e.n[0], e.n[1]) < cosT)
+      out.push(e)
+    })
+    return out
+  }
+
+  // ---------------- 视图基 ----------------
+  function view(name) {
+    if (name === 'front') return { u: [1, 0, 0], v: [0, 0, 1], d: [0, 1, 0], name }
+    if (name === 'top') return { u: [1, 0, 0], v: [0, -1, 0], d: [0, 0, 1], name }
+    if (name === 'left') return { u: [0, 1, 0], v: [0, 0, 1], d: [-1, 0, 0], name }
+    if (name === 'iso') {
+      const s = 1 / Math.sqrt(3)
+      return { u: [1 / Math.SQRT2, -1 / Math.SQRT2, 0], v: [-1 / Math.sqrt(6), -1 / Math.sqrt(6), 2 / Math.sqrt(6)], d: [s, s, s], name }
+    }
+    if (name === 'cabinet') {
+      const k = 0.5 * Math.SQRT1_2
+      return { u: [1, k, 0], v: [0, k, 1], d: [0, 1, 0], name }
+    }
+    throw new Error('unknown view ' + name)
+  }
+
+  // ---------------- 投影 + 遮挡 ----------------
+  function makeCtx(meshes, V, opts = {}) {
+    const tris = []
+    let umin = 1e18, umax = -1e18, vmin = 1e18, vmax = -1e18
+    const proj = p => ({ u: dot(p, V.u), v: dot(p, V.v), d: dot(p, unit(V.d)) })
+    meshes.forEach(m => {
+      const P = m.verts.map(proj)
+      m._P = P
+      P.forEach(q => {
+        umin = Math.min(umin, q.u); umax = Math.max(umax, q.u)
+        vmin = Math.min(vmin, q.v); vmax = Math.max(vmax, q.v)
+      })
+      m.faces.forEach(f => {
+        for (let i = 1; i < f.length - 1; i++) {
+          const A = P[f[0]], B = P[f[i]], C = P[f[i + 1]]
+          const den = (B.u - A.u) * (C.v - A.v) - (C.u - A.u) * (B.v - A.v)
+          if (Math.abs(den) < 1e-12) continue
+          tris.push({
+            a: A, b: B, c: C, den, mi: meshes.indexOf(m),
+            bbox: [Math.min(A.u, B.u, C.u), Math.min(A.v, B.v, C.v), Math.max(A.u, B.u, C.u), Math.max(A.v, B.v, C.v)],
+            cells: [],
+          })
+        }
+      })
+    })
+    const size = Math.max(umax - umin, vmax - vmin, 1)
+    const cell = Math.max(size / 90, 0.05)
+    const cx0 = umin, cy0 = vmin
+    const grid = new Map()
+    const key = (i, j) => i * 100003 + j
+    tris.forEach((t, ti) => {
+      const [x0, y0, x1, y1] = t.bbox
+      const i0 = Math.floor((x0 - cx0) / cell), i1 = Math.floor((x1 - cx0) / cell)
+      const j0 = Math.floor((y0 - cy0) / cell), j1 = Math.floor((y1 - cy0) / cell)
+      if ((i1 - i0 + 1) * (j1 - j0 + 1) > 900) { (grid.get('big') || grid.set('big', []).get('big')).push(ti); return }
+      for (let i = i0; i <= i1; i++) for (let j = j0; j <= j1; j++) {
+        const k = key(i, j)
+        let arr = grid.get(k)
+        if (!arr) { arr = []; grid.set(k, arr) }
+        arr.push(ti)
+      }
+    })
+    const big = grid.get('big') || []
+    const modelSize = size
+    function occluded(q, eps, skipMesh = -99) {
+      const i = Math.floor((q.u - cx0) / cell), j = Math.floor((q.v - cy0) / cell)
+      const lists = [grid.get(key(i, j)) || [], big]
+      for (const list of lists) {
+        for (let li = 0; li < list.length; li++) {
+          const t = tris[list[li]]
+          if (t.mi === skipMesh) continue
+          const A = t.a, B = t.b, C = t.c
+          const x = q.u, y = q.v
+          const w1 = ((x - A.u) * (C.v - A.v) - (C.u - A.u) * (y - A.v)) / t.den
+          const w2 = ((B.u - A.u) * (y - A.v) - (x - A.u) * (B.v - A.v)) / t.den
+          if (w1 < -1e-6 || w2 < -1e-6 || w1 + w2 > 1 + 1e-6) continue
+          const dep = A.d + w1 * (B.d - A.d) + w2 * (C.d - A.d)
+          if (dep > q.d + eps) return true
+        }
+      }
+      return false
+    }
+    return { proj, occluded, tris, umin, umax, vmin, vmax, eps: modelSize * 1e-4 + 1e-4, cell }
+  }
+
+  /* 隐藏线消除：返回 {vis:[[[u,v]...]], hid:[...]} */
+  function hlr(meshes, V, stepMM = 1) {
+    const ctx = makeCtx(meshes, V)
+    const vis = [], hid = []
+    const eps = ctx.eps
+    const D = unit(V.d)
+    meshes.forEach((m, mi) => {
+      const edges = buildEdges(m)
+      edges.forEach(e => {
+        const a = m.verts[e.a], b = m.verts[e.b]
+        let sil = false
+        if (e.n.length === 2) {
+          const s1 = dot(e.n[0], D), s2 = dot(e.n[1], D)
+          sil = (s1 > 0 && s2 < 0) || (s1 < 0 && s2 > 0)
+        }
+        if (!sil && !e.feature) return
+        // 局部可见性：至少有一个相邻面朝向观察者
+        const localVis = e.n.length === 1
+          ? dot(e.n[0], D) > 0
+          : (dot(e.n[0], D) > 1e-6 || dot(e.n[1], D) > 1e-6)
+        const pa = ctx.proj(a), pb = ctx.proj(b)
+        const L = Math.hypot(pb.u - pa.u, pb.v - pa.v)
+        if (L < 1e-6) return
+        const n = Math.max(2, Math.min(260, Math.ceil(L / stepMM)))
+        const flags = new Array(n + 1)
+        for (let k = 0; k <= n; k++) {
+          const t = k / n
+          const q = { u: pa.u + (pb.u - pa.u) * t, v: pa.v + (pb.v - pa.v) * t, d: pa.d + (pb.d - pa.d) * t }
+          flags[k] = localVis && !ctx.occluded(q, eps, mi)
+        }
+        let start = 0
+        for (let k = 1; k <= n; k++) {
+          if (flags[k] !== flags[start]) {
+            pushRun([flags[start], start, k])
+            start = k
+          }
+        }
+        pushRun([flags[start], start, n])
+        function pushRun([f, k0, k1]) {
+          const pts = []
+          for (let k = k0; k <= k1; k++) {
+            const t = k / n
+            pts.push([+(pa.u + (pb.u - pa.u) * t).toFixed(3), +(pa.v + (pb.v - pa.v) * t).toFixed(3)])
+          }
+          if (pts.length < 2) return
+          // 组合体：落在其他实体内部的线段不画
+          if (meshes.length > 1) {
+            const t0 = k0 / n
+            const p3 = lerp3(a, b, t0 + 0.001)
+            for (let j = 0; j < meshes.length; j++) {
+              if (j !== mi && inside(meshes[j], p3)) return
+            }
+          }
+          ;(f ? vis : hid).push(pts)
+        }
+      })
+    })
+    return { vis, hid, ctx }
+  }
+
+  // 点是否被遮挡
+  function pointVisible(meshes, V, p) {
+    const ctx = makeCtx(meshes, V)
+    const q = ctx.proj(p)
+    return !ctx.occluded(q, ctx.eps)
+  }
+
+  /* 对给定三维折线做隐藏线消除（用于并集/相贯线等自定义边）
+   * runs: [[p,p,...]] 或 [{pts, e, mi}]
+   */
+  function hlrPolys(meshes, runs, V, stepMM = 0.5) {
+    const ctx = makeCtx(meshes, V)
+    const vis = [], hid = []
+    const D = unit(V.d)
+    runs.forEach(run => {
+      const pts = Array.isArray(run) ? run : run.pts
+      const mi = Array.isArray(run) ? -99 : (run.mi ?? -99)
+      const force = !Array.isArray(run) && !!run.force
+      let localVis = true
+      if (!Array.isArray(run) && run.e && run.e.n) {
+        const ns = run.e.n
+        localVis = ns.length === 1 ? dot(ns[0], D) > 0 : ns.some(n => dot(n, D) > 1e-6)
+      }
+      for (let s = 0; s < pts.length - 1; s++) {
+        const a = pts[s], b = pts[s + 1]
+        const pa = ctx.proj(a), pb = ctx.proj(b)
+        const L = Math.hypot(pb.u - pa.u, pb.v - pa.v)
+        if (L < 1e-6) continue
+        const n = Math.max(1, Math.min(200, Math.ceil(L / stepMM)))
+        let cur = null
+        for (let k = 0; k <= n; k++) {
+          const t = k / n
+          const q = { u: pa.u + (pb.u - pa.u) * t, v: pa.v + (pb.v - pa.v) * t, d: pa.d + (pb.d - pa.d) * t }
+          const ok = force || (localVis && !ctx.occluded(q, ctx.eps, mi))
+          if (!cur || cur.ok !== ok) {
+            if (cur && cur.pts.length > 1) (cur.ok ? vis : hid).push(cur.pts)
+            cur = { ok, pts: [] }
+          }
+          cur.pts.push([+q.u.toFixed(3), +q.v.toFixed(3)])
+        }
+        if (cur && cur.pts.length > 1) (cur.ok ? vis : hid).push(cur.pts)
+      }
+    })
+    return { vis, hid, ctx }
+  }
+
+  // 点是否在实体内部
+  function inside(m, p) {
+    const dir = unit([0.37213, 0.54771, 0.74873])
+    let cnt = 0
+    m.faces.forEach(f => {
+      for (let i = 1; i < f.length - 1; i++) {
+        const a = m.verts[f[0]], b = m.verts[f[i]], c = m.verts[f[i + 1]]
+        const e1 = sub(b, a), e2 = sub(c, a)
+        const h = cross(dir, e2)
+        const det = dot(e1, h)
+        if (Math.abs(det) < 1e-12) continue
+        const s = sub(p, a)
+        const uu = dot(s, h) / det
+        if (uu < 0 || uu > 1) continue
+        const qq = cross(s, e1)
+        const vv = dot(dir, qq) / det
+        if (vv < 0 || uu + vv > 1) continue
+        const t = dot(e2, qq) / det
+        if (t > 1e-7) cnt++
+      }
+    })
+    return cnt % 2 === 1
+  }
+
+  /* 组合体：去掉落在其他实体内部的边段（并集显示）
+   * 传入 V 时只保留特征边与轮廓边
+   */
+  function unionEdges(meshes, stepMM = 1, V = null) {
+    const out = []
+    const D = V ? unit(V.d) : null
+    meshes.forEach((m, mi) => {
+      const others = meshes.filter((_, i) => i !== mi)
+      buildEdges(m).forEach(e => {
+        if (D) {
+          const sil = e.n.length === 2 && ((dot(e.n[0], D) > 0) !== (dot(e.n[1], D) > 0))
+          if (!e.feature && !sil) return
+        } else if (!e.feature) return
+        const a = m.verts[e.a], b = m.verts[e.b]
+        const L = vlen(sub(b, a))
+        const n = Math.max(2, Math.min(120, Math.ceil(L / stepMM)))
+        let run = null
+        for (let k = 0; k <= n; k++) {
+          const p = lerp3(a, b, k / n)
+          const inOther = others.some(o => inside(o, p))
+          if (!inOther) {
+            if (!run) run = { e, mi, pts: [p] }
+            else run.pts.push(p)
+          } else if (run) { out.push(run); run = null }
+        }
+        if (run) out.push(run)
+      })
+    })
+    return out
+  }
+
+  // 平面切割（凸实体）
+  function cut(m, plane, keepPlus = true) {
+    const n = plane.n, d = plane.d
+    const side = p => (dot(n, p) - d) * (keepPlus ? 1 : -1)
+    const verts = [], faces = [], cutPts = []
+    const vmap = new Map()
+    const addV = (p, key) => {
+      if (key && vmap.has(key)) return vmap.get(key)
+      const id = verts.length
+      verts.push(p)
+      if (key) vmap.set(key, id)
+      return id
+    }
+    m.faces.forEach(f => {
+      const poly = f.map(i => m.verts[i])
+      const inside = poly.map(p => side(p) >= -1e-9)
+      if (inside.every(x => !x)) return
+      const out = []
+      for (let i = 0; i < poly.length; i++) {
+        const A = poly[i], B = poly[(i + 1) % poly.length]
+        const ia = inside[i], ib = inside[(i + 1) % poly.length]
+        if (ia) out.push(A)
+        if (ia !== ib) {
+          const da = side(A), db = side(B)
+          const t = da / (da - db)
+          const P = lerp3(A, B, t)
+          out.push(P)
+          cutPts.push(P)
+        }
+      }
+      if (out.length >= 3) {
+        const key = out.map(p => p.map(x => x.toFixed(4)).join(',')).join('|')
+        faces.push(out.map(p => addV(p, p.map(x => x.toFixed(4)).join(','))))
+      }
+    })
+    // 切口端面
+    if (cutPts.length >= 3) {
+      // 去重
+      const uniq = []
+      cutPts.forEach(p => {
+        if (!uniq.some(q => vlen(sub(p, q)) < 1e-6)) uniq.push(p)
+      })
+      const c = mul(uniq.reduce((s, p) => add(s, p), [0, 0, 0]), 1 / uniq.length)
+      // 平面基
+      const e1 = unit(Math.abs(n[0]) < 0.9 ? cross(n, [1, 0, 0]) : cross(n, [0, 1, 0]))
+      const e2 = cross(n, e1)
+      const sorted = uniq.slice().sort((p, q) =>
+        Math.atan2(dot(sub(p, c), e2), dot(sub(p, c), e1)) - Math.atan2(dot(sub(q, c), e2), dot(sub(q, c), e1)))
+      const ids = sorted.map(p => addV(p, p.map(x => x.toFixed(4)).join(',')))
+      const fa = ids.slice()
+      const nrm = faceNormal(verts, fa)
+      if (dot(nrm, mul(n, keepPlus ? -1 : 1)) < 0) fa.reverse()
+      faces.push(fa)
+    }
+    return { verts, faces, name: m.name }
+  }
+
+  return {
+    mesh, prism, pyramid, frustum, cylinder, cone, sphere, box, extrude,
+    faceNormal, faceCenter, orientOut, buildEdges, view, makeCtx, hlr, hlrPolys, pointVisible, inside, unionEdges, cut,
+    sub, add, mul, dot, cross, vlen, unit, lerp3, TAU,
+  }
+})()
+
+  // ===== js/views.js =====
+/* Views — 三视图场面调度
+ * 输入实体网格，输出符合制图规范的三视图（长对正/高平齐/宽相等），
+ * 支持表面取点的三面投影、45° 辅助线、中心线
+ */
+const Views = (() => {
+  const P = Paper.P
+
+  function scene(meshes, opts = {}) {
+    const gap = opts.gap ?? 14
+    const step = opts.step ?? 0.4
+    const names = ['front', 'top', 'left']
+    const V = {}, C = {}, B = {}, H = {}
+    names.forEach(n => {
+      V[n] = GEO.view(n)
+      C[n] = GEO.makeCtx(meshes, V[n])
+      B[n] = { u0: C[n].umin, u1: C[n].umax, v0: C[n].vmin, v1: C[n].vmax }
+      H[n] = GEO.hlr(meshes, V[n], step)
+      if (opts.extraPolys && opts.extraPolys.length) {
+        const ex = GEO.hlrPolys(meshes, opts.extraPolys, V[n], step)
+        H[n].vis.push(...ex.vis)
+        H[n].hid.push(...ex.hid)
+      }
+    })
+    const W = B.front.u1 - B.front.u0
+    const HT = B.front.v1 - B.front.v0
+    const D = B.top.v1 - B.top.v0
+    const off = { front: [0, 0], top: [0, -gap - D], left: [W + gap, 0] }
+    const map = (n, u, v) => [u - B[n].u0 + off[n][0], v - B[n].v0 + off[n][1]]
+    const sheet = { x0: 0, x1: W + gap + D, y0: -gap - D, y1: HT }
+    const p45a = [W + gap, -gap], p45b = [W + gap + D, -gap - D]
+
+    function outline(n) {
+      const els = []
+      H[n].vis.forEach(pl => els.push(Paper.poly(pl.map(q => map(n, q[0], q[1])), 'solid', false, { grp: n })))
+      H[n].hid.forEach(pl => els.push(Paper.poly(pl.map(q => map(n, q[0], q[1])), 'hidden', false, { grp: n })))
+      return els
+    }
+
+    // 视图中心线（回转轴 / 对称面）
+    function centerLines(axis) {
+      const els = []
+      const L = 4
+      if (!axis) return els
+      const { cx = 0, cy = 0 } = axis
+      // 主视图：竖直线 x=cx
+      els.push(Paper.line([map('front', cx, 0)[0], map('front', 0, B.front.v0 - L)[1]],
+        [map('front', cx, 0)[0], map('front', 0, B.front.v1 + L)[1]], 'center'))
+      // 俯视图：十字
+      const fTop = map('top', cx, B.top.v1)
+      const fBot = map('top', cx, B.top.v0)
+      els.push(Paper.line([fTop[0], fTop[1] + L], [fBot[0], fBot[1] - L], 'center'))
+      const tL = map('top', B.top.u0 - L, cy)
+      const tR = map('top', B.top.u1 + L, cy)
+      els.push(Paper.line(tL, tR, 'center'))
+      // 左视图：竖直线 y=cy
+      const lTop = map('left', cy, B.left.v1)
+      const lBot = map('left', cy, B.left.v0)
+      els.push(Paper.line([lTop[0], lTop[1] + L], [lBot[0], lBot[1] - L], 'center'))
+      return els
+    }
+
+    function line45() {
+      return [Paper.line(p45a, p45b, 'thin', { color: Paper.C.con, dash: [2, 1.5], noAnim: true })]
+    }
+
+    // 一个空间点在三个视图中的投影（含可见性、标注、投影连线）
+    function point(p, name, o = {}) {
+      const labels = { front: name + '′', top: name, left: name + '″' }
+      const metas = {}, parts = {}
+      names.forEach(n => {
+        const q = C[n].proj(p)
+        const vis = (o.vis && o.vis[n] !== undefined) ? o.vis[n] : !C[n].occluded(q, C[n].eps)
+        metas[n] = { pos: map(n, q.u, q.v), vis, label: labels[n], q }
+      })
+      names.forEach(n => {
+        const m = metas[n]
+        const off = { front: [1.6, 1.5], top: [1.6, 1.5], left: [1.6, 1.5] }[n]
+        parts[n] = Paper.pointMark(m.pos, m.label, {
+          color: o.color || Paper.C.pick, hidden: !m.vis, off, size: 3.2,
+        })
+      })
+      const f = metas.front.pos, t = metas.top.pos, l = metas.left.pos
+      const links = {
+        ft: o.links === false ? [] : [Paper.line([f[0], f[1] - 2], [t[0], t[1] + 2], 'thin', { color: Paper.C.con, dash: [2.2, 1.4], noAnim: true })],
+        fl: o.links === false ? [] : [Paper.line([f[0] + 2, f[1]], [l[0] - 2, l[1]], 'thin', { color: Paper.C.con, dash: [2.2, 1.4], noAnim: true })],
+        tl: o.links === false ? [] : (() => {
+          const x45 = W - t[1]
+          return [Paper.line([t[0] + 2, t[1]], [x45, t[1]], 'thin', { color: Paper.C.con, dash: [2.2, 1.4], noAnim: true }),
+            Paper.line([x45, t[1]], [x45, l[1]], 'thin', { color: Paper.C.con, dash: [2.2, 1.4], noAnim: true })]
+        })(),
+      }
+      return { parts, links, metas, els: [...parts.front, ...parts.top, ...parts.left, ...links.ft, ...links.fl, ...links.tl] }
+    }
+
+    return { meshes, V, C, B, H, W, HT, D, gap, off, map, sheet, outline, centerLines, line45, point, p45a, p45b }
+  }
+
+  // 轴测图
+  function axonometric(meshes, kind = 'iso', opts = {}) {
+    const V = GEO.view(kind)
+    const H = GEO.hlr(meshes, V, opts.step ?? 0.35)
+    const els = []
+    H.vis.forEach(pl => els.push(Paper.poly(pl, 'solid')))
+    H.hid.forEach(pl => els.push(Paper.poly(pl, 'hidden')))
+    return { els, H, V }
+  }
+
+  return { scene, axonometric }
+})()
+
+  // ===== js/templates.js =====
+/* Templates — 画法几何 / 三视图 题库
+ * 每个模板 build(prm) 返回 { title, steps:[{title,desc,els}] }
+ */
+const Templates = (() => {
+  const P = Paper.P, TAU = Math.PI * 2, C = Paper.C
+  const T = {}
+  function def(id, cat, name, build, tip = '') { T[id] = { id, cat, name, build, tip } }
+  const step = (title, desc, els) => ({ title, desc, els: (els || []).filter(Boolean) })
+
+  /* ---------- 抽象三视图布局（点线面投影） ---------- */
+  function planeScene(W, H, D, gap = 13) {
+    const map = {
+      front: (u, v) => [u, v],
+      top: (u, v) => [u, -gap - v],          // v: 0=后, D=前
+      left: (u, v) => [W + gap + u, v],      // u: 0=后, D=前
+    }
+    return { W, H, D, gap, map, sheet: { x0: -10, x1: W + gap + D + 10, y0: -gap - D - 12, y1: H + 12 } }
+  }
+
+  function axes(ps) {
+    const els = [], { W, H, D, gap, map } = ps
+    const ln = (a, b) => els.push(Paper.line(a, b, 'center', { color: '#5a6570' }))
+    const tx = (p, s, an = 'start') => els.push(Paper.text(p, s, { size: 2.8, color: '#5a6570', anchor: an }))
+    ln(map.front(-6, 0), map.front(W + 5, 0)); tx(map.front(W + 6, 0), 'X')
+    ln(map.front(0, -6), map.front(0, H + 5)); tx(map.front(0, H + 7), 'Z', 'middle')
+    tx(map.front(-2.5, -2.6), 'O')
+    ln(map.top(-6, 0), map.top(W + 5, 0)); tx(map.top(W + 6, 0), 'X')
+    ln(map.top(0, 0), map.top(0, D + 5)); tx(map.top(0, D + 7), 'Y', 'middle')
+    tx(map.top(-2.5, -2.6), 'O')
+    ln(map.left(0, 0), map.left(D + 5, 0)); tx(map.left(D + 6, 0), 'Y')
+    ln(map.left(0, -5), map.left(0, H + 5)); tx(map.left(0, H + 7), 'Z', 'middle')
+    tx(map.left(-2.5, -2.6), 'O')
+    const p0 = [W + gap, -gap]
+    els.push(Paper.line(p0, [p0[0] + D + 4, p0[1] - D - 4], 'thin', { color: C.con, dash: [2, 1.4], noAnim: true }))
+    return els
+  }
+
+  /* =========================================================
+   * 一、点线面投影
+   * ========================================================= */
+  def('point3', 'point', '点的三面投影', (prm = {}) => {
+    const x = prm.x ?? 34, y = prm.y ?? 20, z = prm.z ?? 26
+    const W = 48, H = 38, D = 30
+    const ps = planeScene(W, H, D), M = ps.map
+    const aF = M.front(x, z), aT = M.top(x, y), aL = M.left(y, z)
+    const x45 = W - aT[1]
+    return {
+      title: `点的三面投影 A(${x}, ${y}, ${z})`,
+      steps: [
+        step('1. 建立三投影面体系', '画出 OX、OZ、OY 三条投影轴，并在右下方作 45° 辅助线——它是俯视图与左视图之间"宽相等"的桥梁。', axes(ps)),
+        step('2. 作正面投影 a′', `在 V 面内：自 O 点向右量取 x=${x}，向上量取 z=${z}，得 a′。`, [Paper.pointMark(aF, 'a′', { color: C.aux, off: [-1.6, 1.6], anchor: 'end' })]),
+        step('3. 作水平投影 a', `由 a′ 向下作投影连线（长对正）；在 H 面内量取 y=${y}，得 a。`, [
+          Paper.line([aF[0], aF[1] - 1.5], [aT[0], aT[1] + 1.5], 'thin', { color: C.con, dash: [2.2, 1.4], noAnim: true }),
+          ...Paper.pointMark(aT, 'a', { color: C.pick, off: [1.6, -1.8] }),
+        ]),
+        step('4. 作侧面投影 a″', '由 a 向右引水平线交 45° 线，再竖直向上（宽相等）；与 a′ 引出的水平线相交，得 a″。', [
+          Paper.line([aT[0] + 1.5, aT[1]], [x45, aT[1]], 'thin', { color: C.con, dash: [2.2, 1.4], noAnim: true }),
+          Paper.line([x45, aT[1]], [x45, aL[1]], 'thin', { color: C.con, dash: [2.2, 1.4], noAnim: true }),
+          Paper.line([aF[0] + 1.5, aF[1]], [aL[0] + 3, aL[1]], 'thin', { color: C.con, dash: [2.2, 1.4], noAnim: true }),
+          ...Paper.pointMark(aL, 'a″', { color: C.pick, off: [1.6, 1.6] }),
+        ]),
+        step('5. 归纳', 'a′a ⊥ OX（长对正）；a′a″ ⊥ OZ（高平齐）；aa″ 由 45° 线保证（宽相等）。这就是三视图的三条基本规律。', []),
+      ],
+    }
+  })
+
+  def('line3', 'point', '直线的三面投影', (prm = {}) => {
+    const kind = prm.kind || 'general'
+    const W = 50, H = 42, D = 34
+    const ps = planeScene(W, H, D), M = ps.map
+    let A, B
+    if (kind === 'horizontal') { A = [12, 18, 24]; B = [40, 18, 24] }
+    else { A = [10, 10, 10]; B = [40, 28, 30] }
+    const pr = (p, k) => k === 'front' ? [p[0], p[2]] : k === 'top' ? [p[0], p[1]] : [p[1], p[2]]
+    const seg = k => Paper.line(M[k](...pr(A, k)), M[k](...pr(B, k)), 'thick', { color: C.pick })
+    const labs = k => [
+      ...Paper.pointMark(M[k](...pr(A, k)), k === 'front' ? 'a′' : k === 'top' ? 'a' : 'a″', { color: C.aux, off: [-1.6, -1.8], anchor: 'end' }),
+      ...Paper.pointMark(M[k](...pr(B, k)), k === 'front' ? 'b′' : k === 'top' ? 'b' : 'b″', { color: C.aux, off: [1.6, 1.6] }),
+    ]
+    return {
+      title: kind === 'horizontal' ? '水平线的三面投影' : '一般位置直线的三面投影',
+      steps: [
+        step('1. 定出两端点', '先按坐标在三个投影面内定出 A、B 两点的各面投影。', [...axes(ps), ...labs('front'), ...labs('top'), ...labs('left')]),
+        step('2. 连正面投影', '同面投影相连：a′b′ 即直线 AB 的正面投影。', [seg('front')]),
+        step('3. 连水平投影', 'ab 为水平投影，与 a′b′ 长对正。', [seg('top')]),
+        step('4. 连侧面投影', 'a″b″ 为侧面投影，由 45° 线保证宽相等。', [seg('left')]),
+        step('5. 投影特性', kind === 'horizontal'
+          ? '水平线平行于 H 面：水平投影反映实长，与 OX 轴的夹角反映真实倾角；正面、侧面投影分别平行于 OX、OY 轴且长度缩短。'
+          : '一般位置直线与三个投影面都倾斜：三面投影均短于实长，也不反映真实倾角。求实长需用直角三角形法。', []),
+      ],
+    }
+  })
+
+  def('plane3', 'point', '平面的三面投影（正垂面）', () => {
+    const W = 54, H = 44, D = 36
+    const ps = planeScene(W, H, D), M = ps.map
+    const A = [12, 10, 16], B = [46, 34, 33], Cc = [26, 30, 23]
+    const pr = (p, k) => k === 'front' ? [p[0], p[2]] : k === 'top' ? [p[0], p[1]] : [p[1], p[2]]
+    const tri = k => Paper.poly([M[k](...pr(A, k)), M[k](...pr(B, k)), M[k](...pr(Cc, k))], 'thick', true, { color: C.pick })
+    const labs = k => [A, B, Cc].map((p, i) =>
+      Paper.text(M[k](...pr(p, k)), ['a', 'b', 'c'][i] + (k === 'front' ? '′' : k === 'left' ? '″' : ''), { size: 3, color: C.aux }))
+    return {
+      title: '正垂面的三面投影',
+      steps: [
+        step('1. 建立投影体系', '仍用三投影面体系与 45° 辅助线。', axes(ps)),
+        step('2. 定出三顶点', 'A、B、C 三点的 z 坐标满足 z = 0.5x + 10：三点共面，且该面垂直于 V 面。', [...labs('front'), ...labs('top'), ...labs('left')]),
+        step('3. 正面投影', '正垂面垂直于 V 面，正面投影积聚成一条斜线 a′b′c′——这是投影面垂直面最重要的特性。', [tri('front')]),
+        step('4. 水平投影', '水平投影 abc 是三角形，但不反映实形。', [tri('top')]),
+        step('5. 侧面投影', '侧面投影同样是三角形，也不反映实形。', [tri('left')]),
+        step('6. 结论', '投影面垂直面的投影特性：一个投影积聚成线，另外两个投影为类似形。', []),
+      ],
+    }
+  })
+
+  /* =========================================================
+   * 二、基本体三视图 + 表面取点
+   * ========================================================= */
+  const SOLID_STEPS = (S, axis, tips) => [
+    step('1. 画基准线', '先画中心线和基准线，确定三个视图的位置。', S.centerLines(axis)),
+    step('2. 画俯视图', tips.top, S.outline('top')),
+    step('3. 画主视图', tips.front, S.outline('front')),
+    step('4. 画左视图', tips.left, [...S.line45(), ...S.outline('left')]),
+  ]
+
+  def('prism3', 'solid', '棱柱三视图与表面取点', (prm = {}) => {
+    const n = prm.sides ?? 5, R = prm.R ?? 30, h = prm.h ?? 45
+    const m = GEO.prism({ n, R, h, rot: Math.PI / 2 })
+    const S = Views.scene([m], { gap: 14 })
+    const faceP = (i, t, zf) => {
+      const a0 = Math.PI / 2 + i * TAU / n, a1 = a0 + TAU / n
+      const a = a0 + (a1 - a0) * t
+      return [R * Math.cos(a), R * Math.sin(a), zf * h]
+    }
+    const A = faceP(0, 0.45, 0.58)
+    const B = faceP(3, 0.40, 0.62)
+    const pa = S.point(A, 'a', { vis: { top: true } })
+    const pb = S.point(B, 'b', { vis: { top: true } })
+    return {
+      title: `${n} 棱柱三视图与表面取点`,
+      steps: [
+        ...SOLID_STEPS(S, { cx: 0, cy: 0 }, {
+          top: `${n} 棱柱的俯视图反映底面实形（正 ${n} 边形），主、左视图为矩形。`,
+          front: '按"长对正"由俯视图向上投影，高度取 h，得主视图。前棱线把主视图分成两块可见棱面。',
+          left: '按"高平齐、宽相等"由 45° 线求得左视图，后面的棱线不可见，画虚线。',
+        }),
+        step('5. 已知条件', 'a′ 在前左棱面上，可见；(b′) 在右后棱面上，正面投影被前面遮挡，加括号表示不可见。',
+          [...pa.parts.front, ...pb.parts.front]),
+        step('6. 求 A 的另外两投影', '由 a′ 向下作投影连线，交俯视图前左棱边得 a（可见）；再由 a 经 45° 线求得 a″。',
+          [...pa.links.ft, ...pa.parts.top, ...pa.links.tl, ...pa.parts.left]),
+        step('7. 求 B 的另外两投影', '由 (b′) 向下作投影连线，交俯视图右后棱边得 b；B 在右侧棱面上，左视图投影不可见，记作 (b″)。',
+          [...pb.links.ft, ...pb.parts.top, ...pb.links.tl, ...pb.parts.left]),
+        step('8. 检查', '长对正：a′、a 在同一竖直线上；高平齐：a′、a″ 在同一水平线上；宽相等：由 45° 线保证。', []),
+      ],
+    }
+  })
+
+  def('pyramid3', 'solid', '棱锥三视图与表面取点', (prm = {}) => {
+    const n = prm.sides ?? 4, R = prm.R ?? 28, h = prm.h ?? 46
+    const m = GEO.pyramid({ n, R, h, rot: Math.PI / 4 })
+    const S = Views.scene([m], { gap: 14 })
+    const fp = (fi, s, t) => {
+      const f = m.faces[fi]
+      const A0 = m.verts[f[0]], B0 = m.verts[f[1]], C0 = m.verts[f[2]]
+      return GEO.lerp3(GEO.lerp3(A0, B0, s), C0, t)
+    }
+    const A = fp(0, 0.45, 0.5)
+    const B = fp(2, 0.55, 0.35)
+    const pa = S.point(A, 'a', { vis: { top: true } })
+    const pb = S.point(B, 'b', { vis: { top: false } })
+    const fB = m.faces[2]
+    const baseB = GEO.lerp3(m.verts[fB[0]], m.verts[fB[1]], 0.55)
+    const apex = m.verts[m.verts.length - 1]
+    const aux = ['front', 'top', 'left'].map(k => {
+      const Vv = GEO.view(k)
+      return Paper.line(S.map(k, GEO.dot(baseB, Vv.u), GEO.dot(baseB, Vv.v)),
+        S.map(k, GEO.dot(apex, Vv.u), GEO.dot(apex, Vv.v)),
+        'thin', { color: C.aux, dash: [2.4, 1.4], noAnim: true })
+    })
+    return {
+      title: `${n} 棱锥三视图与表面取点`,
+      steps: [
+        ...SOLID_STEPS(S, { cx: 0, cy: 0 }, {
+          top: '底面为正多边形，俯视图反映实形；锥顶的投影在中心。',
+          front: '主视图为三角形，底边为底面投影，顶点为锥顶。',
+          left: '左视图同样是三角形，按高平齐、宽相等作出。',
+        }),
+        step('5. 已知条件', 'a′、b′ 分别在左前、右后棱面上。', [...pa.parts.front, ...pb.parts.front]),
+        step('6. 求 A 的另外两投影', 'A 在左前棱面上：由 a′ 向下作投影连线，落在该棱面的水平投影内得 a；再由 45° 线求 a″。',
+          [...pa.links.ft, ...pa.parts.top, ...pa.links.tl, ...pa.parts.left]),
+        step('7. 用辅助素线求 B', '过锥顶 S 与 B 作辅助素线并延长到基边：先求基边点的三面投影，再在素线上定出 B。这是棱锥表面取点的基本方法。',
+          [...aux, ...pb.links.ft, ...pb.parts.top, ...pb.links.tl, ...pb.parts.left]),
+        step('8. 注意', '棱锥表面取点：点所在棱面在某个视图中不可见时，该投影也应加括号。', []),
+      ],
+    }
+  })
+
+  def('cylinder3', 'solid', '圆柱三视图与表面取点', (prm = {}) => {
+    const r = prm.r ?? 22, h = prm.h ?? 46
+    const m = GEO.cylinder({ r, h, seg: 72 })
+    const S = Views.scene([m], { gap: 14 })
+    const P3 = (th, zf) => [r * Math.cos(th), r * Math.sin(th), zf * h]
+    const A = P3(Math.PI * 0.66, 0.62)
+    const B = P3(-Math.PI * 0.33, 0.4)
+    const pa = S.point(A, 'a', { vis: { top: true } })
+    const pb = S.point(B, 'b', { vis: { top: true } })
+    const aux = ['front', 'top', 'left'].map(k => {
+      const Vv = GEO.view(k)
+      return Paper.line(S.map(k, GEO.dot([B[0], B[1], 0], Vv.u), GEO.dot([B[0], B[1], 0], Vv.v)),
+        S.map(k, GEO.dot([B[0], B[1], h], Vv.u), GEO.dot([B[0], B[1], h], Vv.v)),
+        'thin', { color: C.aux, dash: [2.4, 1.4], noAnim: true })
+    })
+    return {
+      title: '圆柱三视图与表面取点',
+      steps: [
+        ...SOLID_STEPS(S, { cx: 0, cy: 0 }, {
+          top: '俯视图为圆，反映底面实形；圆心处画十字中心线。',
+          front: '主视图为矩形，左右两条竖线是圆柱的最左、最右素线（转向轮廓线）。',
+          left: '左视图与主视图完全相同，也是矩形。',
+        }),
+        step('5. 已知条件', 'a′ 在前半圆柱面上（可见），(b′) 在后半圆柱面上（不可见，加括号）。', [...pa.parts.front, ...pb.parts.front]),
+        step('6. 求 A 的另外两投影', '由 a′ 向下作投影连线，交俯视图前半圆得 a；再由 45° 线求 a″，A 在左侧，a″ 可见。',
+          [...pa.links.ft, ...pa.parts.top, ...pa.links.tl, ...pa.parts.left]),
+        step('7. 用辅助素线求 B', 'B 在圆柱面上，过 B 作竖直辅助素线（俯视图为一根径向线），先求素线的各面投影，再在素线上定 B。',
+          [...aux, ...pb.links.ft, ...pb.parts.top, ...pb.links.tl, ...pb.parts.left]),
+        step('8. 要点', '圆柱面取点：水平投影一定落在圆周上——这是"积聚性"带来的便利。', []),
+      ],
+    }
+  })
+
+  def('cone3', 'solid', '圆锥三视图与表面取点', (prm = {}) => {
+    const r = prm.r ?? 25, h = prm.h ?? 48
+    const m = GEO.cone({ r, h, seg: 72 })
+    const S = Views.scene([m], { gap: 14 })
+    const P3 = (th, zf) => [r * (1 - zf) * Math.cos(th), r * (1 - zf) * Math.sin(th), zf * h]
+    const A = P3(Math.PI * 0.62, 0.55)
+    const B = P3(Math.PI * 0.18, 0.35)
+    const pa = S.point(A, 'a', { vis: { top: true } })
+    const pb = S.point(B, 'b', { vis: { top: true } })
+    const rr = r * (1 - 0.35), zb = 0.35 * h
+    const aux = [
+      Paper.circle(S.map('top', 0, 0), rr, 'thin', { color: C.aux, dash: [2.4, 1.4], noAnim: true }),
+      Paper.line(S.map('front', -rr, zb), S.map('front', rr, zb), 'thin', { color: C.aux, dash: [2.4, 1.4], noAnim: true }),
+      Paper.line(S.map('left', -rr, zb), S.map('left', rr, zb), 'thin', { color: C.aux, dash: [2.4, 1.4], noAnim: true }),
+    ]
+    return {
+      title: '圆锥三视图与表面取点',
+      steps: [
+        ...SOLID_STEPS(S, { cx: 0, cy: 0 }, {
+          top: '俯视图为圆，圆心即锥顶的投影。',
+          front: '主视图为等腰三角形，两腰是最左、最右素线。',
+          left: '左视图与主视图相同。',
+        }),
+        step('5. 已知条件', 'a′、b′ 均在圆锥面上。', [...pa.parts.front, ...pb.parts.front]),
+        step('6. 求 A 的另外两投影', '由 a′ 向下作投影连线，交俯视图相应半径圆得 a；再求 a″。',
+          [...pa.links.ft, ...pa.parts.top, ...pa.links.tl, ...pa.parts.left]),
+        step('7. 用辅助纬圆求 B', '过 B 作水平辅助平面，与圆锥面交出一个纬圆：俯视图为圆，主、左视图为水平线。B 的各投影必在该纬圆的同面投影上。',
+          [...aux, ...pb.links.ft, ...pb.parts.top, ...pb.links.tl, ...pb.parts.left]),
+        step('8. 两种方法', '圆锥表面取点有两种方法：辅助素线法、辅助纬圆法。纬圆法对回转体通用，更稳妥。', []),
+      ],
+    }
+  })
+
+  def('sphere3', 'solid', '圆球三视图与表面取点', (prm = {}) => {
+    const r = prm.r ?? 28
+    const m = GEO.sphere({ r, seg: 48, rings: 26, c: [0, 0, r] })
+    const S = Views.scene([m], { gap: 14 })
+    const LL = (lon, lat) => [r * Math.cos(lat) * Math.cos(lon), r * Math.cos(lat) * Math.sin(lon), r + r * Math.sin(lat)]
+    const A = LL(Math.PI * 0.7, Math.PI * 0.12)
+    const B = LL(Math.PI * 1.35, -Math.PI * 0.3)
+    const pa = S.point(A, 'a', { vis: { top: true } })
+    const pb = S.point(B, 'b', { vis: { top: false } })
+    const rr = r * Math.cos(Math.PI * 0.12), zb = r + r * Math.sin(Math.PI * 0.12)
+    const aux = [
+      Paper.circle(S.map('top', 0, 0), rr, 'thin', { color: C.aux, dash: [2.4, 1.4], noAnim: true }),
+      Paper.line(S.map('front', -rr, zb), S.map('front', rr, zb), 'thin', { color: C.aux, dash: [2.4, 1.4], noAnim: true }),
+      Paper.line(S.map('left', -rr, zb), S.map('left', rr, zb), 'thin', { color: C.aux, dash: [2.4, 1.4], noAnim: true }),
+    ]
+    return {
+      title: '圆球三视图与表面取点',
+      steps: [
+        step('1. 画中心线', '球的三视图都是等径圆，先画十字中心线。', S.centerLines({ cx: 0, cy: 0 })),
+        step('2. 三个视图', `以球心为圆心、R=${r} 画圆，三个视图完全相同。三个圆分别是球面对三个投影面的转向轮廓线。`,
+          [...S.outline('top'), ...S.outline('front'), ...S.line45(), ...S.outline('left')]),
+        step('3. 已知条件', 'a′、b′ 在球面上。', [...pa.parts.front, ...pb.parts.front]),
+        step('4. 用辅助纬圆求 A', '过 A 作水平纬圆：俯视图为圆（半径由 a′ 的高度决定），主视图为一条水平线。A 的 a 必在该圆上。',
+          [...aux, ...pa.links.ft, ...pa.parts.top, ...pa.links.tl, ...pa.parts.left]),
+        step('5. 求 B', 'B 在球的左后下方：由 b′ 与辅助纬圆求得 b，再由 45° 线求 b″。注意判断各投影的可见性。',
+          [...pb.links.ft, ...pb.parts.top, ...pb.links.tl, ...pb.parts.left]),
+        step('6. 要点', '球面取点只能用辅助纬圆法；三个投影都没有积聚性，必须借助纬圆。', []),
+      ],
+    }
+  })
+
+  /* =========================================================
+   * 三、截交与相贯
+   * ========================================================= */
+  def('prismCut', 'cut', '四棱柱截交（正垂面）', (prm = {}) => {
+    const a = 34, h = 52, ang = (prm.angle ?? 32) * Math.PI / 180
+    const m = GEO.prism({ n: 4, R: a / Math.SQRT2, h, rot: Math.PI / 4 })
+    const nrm = [Math.sin(ang), 0, Math.cos(ang)]
+    const d = nrm[2] * h * 0.72
+    const cut = GEO.cut(m, { n: nrm, d }, false)
+    const S = Views.scene([cut], { gap: 14 })
+    const zAt = x => (d - nrm[0] * x) / nrm[2]
+    const trace = [Paper.line(S.map('front', -a, zAt(-a)), S.map('front', a, zAt(a)), 'thin', { color: C.aux, dash: [3, 1.6], noAnim: true })]
+    return {
+      title: '四棱柱被正垂面截切',
+      steps: [
+        step('1. 分析', '正垂面垂直于 V 面，正面投影积聚为一条斜线；截交线的正面投影就落在这条斜线上。', [...S.line45(), ...trace]),
+        step('2. 画俯视图', '棱柱的四条棱线与截平面相交，俯视图中截交线与棱柱轮廓重合（棱柱截交的特点）。', S.outline('top')),
+        step('3. 画主视图', '正面投影中截交线积聚成一条斜线，斜线以上部分被切去。', S.outline('front')),
+        step('4. 画左视图', '截交线的侧面投影是一个四边形，按宽相等由俯视图量取。', S.outline('left')),
+        step('5. 结论', '棱柱截交线一定是多边形：顶点是棱线与截平面的交点，边数等于截平面切到的棱面数。', []),
+      ],
+    }
+  })
+
+  def('cylCut', 'cut', '圆柱截交（斜切得椭圆）', (prm = {}) => {
+    const r = 24, h = 56, ang = (prm.angle ?? 35) * Math.PI / 180
+    const m = GEO.cylinder({ r, h, seg: 72 })
+    const nrm = [Math.sin(ang), 0, Math.cos(ang)]
+    const d = nrm[2] * h * 0.66
+    const cut = GEO.cut(m, { n: nrm, d }, false)
+    const S = Views.scene([cut], { gap: 14 })
+    const zAt = x => (d - nrm[0] * x) / nrm[2]
+    const trace = [Paper.line(S.map('front', -r - 8, zAt(-r - 8)), S.map('front', r + 8, zAt(r + 8)), 'thin', { color: C.aux, dash: [3, 1.6], noAnim: true })]
+    return {
+      title: '圆柱被正垂面斜切',
+      steps: [
+        step('1. 分析', '截平面与圆柱轴线斜交，截交线是椭圆。正面投影积聚成斜线，水平投影与圆重合（积聚性）。', [...trace, ...S.centerLines({ cx: 0, cy: 0 })]),
+        step('2. 俯视图', '圆柱的水平投影是圆，截交线的水平投影就是这个圆本身。', S.outline('top')),
+        step('3. 主视图', '截交线的正面投影是斜线；斜线以上部分被切去。', S.outline('front')),
+        step('4. 左视图', '截交线的侧面投影是椭圆：逐点求出各点的侧面投影后光滑连接。', [...S.line45(), ...S.outline('left')]),
+        step('5. 结论', '圆柱截交线取决于截平面与轴线的位置：垂直→圆，平行→矩形，斜交→椭圆。', []),
+      ],
+    }
+  })
+
+  def('coneCut', 'cut', '圆锥截交（五种情形）', (prm = {}) => {
+    const kind = prm.kind || 'ellipse'
+    const r = 26, h = 52
+    const m = GEO.cone({ r, h, seg: 72 })
+    const alpha = Math.atan2(r, h)
+    const crit = Math.PI / 2 - alpha
+    let ang = crit - 0.42
+    if (kind === 'parabola') ang = crit
+    if (kind === 'hyperbola') ang = crit + 0.22
+    if (kind === 'circle') ang = 0
+    if (kind === 'triangle') ang = crit + 0.3
+    const nrm = [Math.sin(ang), 0, Math.cos(ang)]
+    const d = kind === 'triangle' ? nrm[2] * h : nrm[2] * h * 0.62
+    const cut = GEO.cut(m, { n: nrm, d }, false)
+    const S = Views.scene([cut], { gap: 14 })
+    const zAt = x => (d - nrm[0] * x) / nrm[2]
+    const trace = [Paper.line(S.map('front', -r - 8, zAt(-r - 8)), S.map('front', r + 8, zAt(r + 8)), 'thin', { color: C.aux, dash: [3, 1.6], noAnim: true })]
+    const names = { ellipse: '椭圆', parabola: '抛物线', hyperbola: '双曲线', circle: '圆', triangle: '三角形' }
+    return {
+      title: `圆锥截交——${names[kind]}`,
+      steps: [
+        step('1. 分析', `截平面与圆锥轴线的夹角同半锥角比较，决定截交线形状。当前情形为：${names[kind]}。`, [...trace, ...S.centerLines({ cx: 0, cy: 0 })]),
+        step('2. 俯视图', '截交线的水平投影由若干个点的水平投影光滑连接而成。', S.outline('top')),
+        step('3. 主视图', '正面投影中截平面积聚成斜线，交点是转向轮廓线上的点。', S.outline('front')),
+        step('4. 左视图', '按高平齐、宽相等求出各点的侧面投影并连线。', [...S.line45(), ...S.outline('left')]),
+        step('5. 五种情形', 'θ>半锥角→椭圆；θ=半锥角→抛物线；θ<半锥角→双曲线；θ=90°→圆；过锥顶→三角形。', []),
+      ],
+    }
+  })
+
+  def('interCyl', 'cut', '两圆柱正交相贯', () => {
+    // 小圆柱立在大圆柱上（T 形），按解析式直接绘制三视图
+    const r1 = 15, r2 = 24, z0 = 30, hTop = 74, gap = 14, D = 88, W = 48, H = hTop
+    const M = {
+      front: (u, v) => [u, v],
+      top: (u, y) => [u, -gap - (y + D / 2)],
+      left: (y, v) => [W + gap + (y + D / 2), v],
+    }
+    const zSeam = x => z0 + Math.sqrt(r2 * r2 - x * x)
+    // 相贯线采样
+    const seamF = [], seamL = []
+    for (let i = 0; i <= 80; i++) {
+      const th = Math.PI * i / 80                    // 前半圈：x 由 +r1 到 -r1
+      const x = r1 * Math.cos(th)
+      seamF.push([x, z0 + Math.sqrt(r2 * r2 - x * x)])
+    }
+    for (let i = 0; i <= 80; i++) {
+      const th = -Math.PI / 2 + Math.PI * i / 80     // y 由 -r1 到 +r1
+      const y = r1 * Math.sin(th)
+      const x = r1 * Math.cos(th)
+      seamL.push([y, z0 + Math.sqrt(r2 * r2 - x * x)])
+    }
+    const P = (k, pts, st = 'solid', o = {}) => Paper.poly(pts.map(p => k === 'front' ? M.front(p[0], p[1]) : k === 'top' ? M.top(p[0], p[1]) : M.left(p[0], p[1])), st, false, o)
+    const s1 = [
+      Paper.line(M.front(0, -4), M.front(0, H + 8), 'center'),
+      Paper.line(M.front(-34, z0), M.front(34, z0), 'center'),
+      Paper.line(M.top(0, -52), M.top(0, 52), 'center'),
+      Paper.line(M.top(-34, 0), M.top(34, 0), 'center'),
+      Paper.line(M.left(-52, z0), M.left(52, z0), 'center'),
+      Paper.line(M.left(0, -4), M.left(0, H + 8), 'center'),
+      Paper.line([W + gap, -gap], [W + gap + D, -gap - D], 'thin', { color: C.con, dash: [2, 1.5], noAnim: true }),
+    ]
+    // 水平圆柱（黑色粗实线）
+    const s2 = []
+    s2.push(P('front', [[-r2, 6], [r2, 6]], 'solid'))
+    s2.push(P('front', [[-r2, 6], [-r2, 54], [-r1, 54]], 'solid'))
+    s2.push(P('front', [[r2, 6], [r2, 54], [r1, 54]], 'solid'))
+    s2.push(P('top', [[-r2, -D / 2], [r2, -D / 2], [r2, D / 2], [-r2, D / 2], [-r2, -D / 2]], 'solid'))
+    s2.push(P('left', [[-D / 2, 6], [D / 2, 6], [D / 2, 54], [r1, 54]], 'solid'))
+    s2.push(P('left', [[-D / 2, 6], [-D / 2, 54], [-r1, 54]], 'solid'))
+    // 竖直圆柱
+    const s3 = []
+    s3.push(P('front', [[-r1, 74], [-r1, zSeam(-r1)]], 'solid'))
+    s3.push(P('front', [[r1, 74], [r1, zSeam(r1)]], 'solid'))
+    s3.push(P('front', [[-r1, 74], [r1, 74]], 'solid'))
+    s3.push(Paper.circle(M.top(0, 0), r1, 'solid'))
+    s3.push(P('left', [[-r1, 74], [-r1, 54]], 'solid'))
+    s3.push(P('left', [[r1, 74], [r1, 54]], 'solid'))
+    s3.push(P('left', [[-r1, 74], [r1, 74]], 'solid'))
+    // 相贯线
+    const s4 = [
+      Paper.poly(seamF.map(p => M.front(p[0], p[1])), 'solid', false, { color: C.pick, w: 0.85 }),
+      Paper.poly(seamL.map(p => M.left(p[0], p[1])), 'solid', false, { color: C.pick, w: 0.85 }),
+    ]
+    return {
+      title: '两圆柱正交相贯',
+      steps: [
+        step('1. 画中心线', '先定三个视图的位置和两圆柱轴线的交点。', s1),
+        step('2. 画水平大圆柱', '大圆柱轴线水平，主视图为矩形，俯视图为矩形（长度 88），左视图为矩形（高度 48）。', s2),
+        step('3. 画竖直小圆柱', '小圆柱轴线竖直，主、左视图为矩形，俯视图为圆——这个圆就是相贯线水平投影的"积聚"位置。', s3),
+        step('4. 求相贯线', '相贯线上每点同时满足两个圆柱面方程：x²+(z−30)²=24²，x²+y²=15²。逐点求出后光滑连接，即得主视图的拱形与左视图的 U 形。', s4),
+        step('5. 结论', '相贯线总是向大圆柱一侧弯曲；若两圆柱等径，相贯线退化为两条相交直线。', []),
+      ],
+    }
+  })
+
+  /* =========================================================
+   * 四、组合体 / 轴测图
+   * ========================================================= */
+  def('comboStack', 'combo', '叠加式组合体三视图', () => {
+    const base = GEO.box({ x0: -32, y0: -20, z0: 0, L: 64, W: 40, H: 12 })
+    const wall = GEO.box({ x0: -32, y0: -20, z0: 12, L: 14, W: 40, H: 36 })
+    const boss = GEO.cylinder({ r: 11, h: 14, seg: 64, cx: 14, cy: 0, z0: 12 })
+    const parts = [base, wall, boss]
+    const S = Views.scene(parts, { gap: 14 })
+    return {
+      title: '叠加式组合体三视图',
+      steps: [
+        step('1. 形体分析', '组合体由三部分组成：底板（长方体）、立板（长方体）、圆柱凸台。先分析各部分的形状和相对位置。', S.centerLines({ cx: 14, cy: 0 })),
+        step('2. 俯视图', '按各部分的水平投影画俯视图：底板矩形、立板矩形、凸台圆。', S.outline('top')),
+        step('3. 主视图', '主视图反映"长"与"高"：底板、立板、凸台依次向上叠加。', S.outline('front')),
+        step('4. 左视图', '左视图反映"高"与"宽"：注意立板与凸台的前后位置。', [...S.line45(), ...S.outline('left')]),
+        step('5. 检查', '画图口诀：先形体分析，后选主视图；先画主要轮廓，后画细节；最后检查长对正、高平齐、宽相等。', []),
+      ],
+    }
+  })
+
+  def('comboCut', 'combo', '切割式组合体三视图', () => {
+    const prof = [[-30, 0], [30, 0], [30, 26], [10, 26], [10, 10], [-10, 10], [-10, 26], [-30, 26]]
+    const m = GEO.extrude({ profile: prof, axis: 'y', from: -18, depth: 36 })
+    const S = Views.scene([m], { gap: 14 })
+    return {
+      title: '切割式组合体三视图',
+      steps: [
+        step('1. 形体分析', '该组合体可看作长方体被切去一个 U 形槽：先有整体，再逐步切割。', S.centerLines({ cx: 0, cy: 0 })),
+        step('2. 俯视图', '俯视图是一个矩形，槽口在中间，槽的两条边为可见轮廓。', S.outline('top')),
+        step('3. 主视图', '主视图反映 U 形槽的实际形状：中间凹下 16，槽宽 20。', S.outline('front')),
+        step('4. 左视图', '左视图为矩形；槽底在左视图中不可见，画虚线。', [...S.line45(), ...S.outline('left')]),
+        step('5. 要点', '切割式组合体画图顺序：先画完整基本体，再逐块切去；每切一刀都要把新增轮廓和消失轮廓处理干净。', []),
+      ],
+    }
+  })
+
+  def('axoIso', 'axo', '正等轴测图', () => {
+    const base = GEO.box({ x0: -30, y0: -18, z0: 0, L: 60, W: 36, H: 12 })
+    const wall = GEO.box({ x0: -30, y0: -18, z0: 12, L: 14, W: 36, H: 34 })
+    const parts = [base, wall]
+    const V = GEO.view('iso')
+    const Hh = GEO.hlr(parts, V, 0.35)
+    const body = []
+    Hh.vis.forEach(pl => body.push(Paper.poly(pl, 'solid')))
+    Hh.hid.forEach(pl => body.push(Paper.poly(pl, 'hidden')))
+    const O = [0, 0, 0]
+    const axesEls = []
+    const mk = (p, t) => {
+      const a = [GEO.dot(O, V.u), GEO.dot(O, V.v)], b = [GEO.dot(p, V.u), GEO.dot(p, V.v)]
+      return [Paper.line(a, b, 'thin', { color: C.aux, noAnim: true }),
+        Paper.text([b[0] + 1.2 * Math.sign(b[0] || 1), b[1] + 1.2], t, { size: 3, color: C.aux, anchor: 'start' })]
+    }
+    axesEls.push(...mk([62, 0, 0], 'X'), ...mk([0, 62, 0], 'Y'), ...mk([0, 0, 58], 'Z'))
+    const k1 = Math.ceil(body.length * 0.45), k2 = Math.ceil(body.length * 0.75)
+    return {
+      title: '正等轴测图',
+      steps: [
+        step('1. 建立轴测轴', '正等测：OZ 竖直，OX、OY 与水平线成 30°，三轴轴向伸缩系数均取 1（简化系数）。', axesEls),
+        step('2. 画底板', '沿轴测轴方向量取长、宽，画出底板底面和高度方向的棱线。', body.slice(0, k1)),
+        step('3. 画立板', '在底板上表面定位立板，沿 OZ 方向量取高度，完成立板轮廓。', body.slice(k1, k2)),
+        step('4. 完成', '连接各棱线，检查不可见轮廓是否遗漏。', body.slice(k2)),
+        step('5. 要点', '轴测图不是三视图：一个图就能表现立体形状，但只有沿三个轴测轴方向才能直接量取尺寸。', []),
+      ],
+    }
+  })
+
+  def('axoCab', 'axo', '斜二轴测图', () => {
+    const prof = [[-26, 0], [26, 0], [26, 18], [6, 18], [6, 30], [-26, 30]]
+    const m = GEO.extrude({ profile: prof, axis: 'y', from: -14, depth: 28 })
+    const V = GEO.view('cabinet')
+    const Hh = GEO.hlr([m], V, 0.35)
+    const body = []
+    Hh.vis.forEach(pl => body.push(Paper.poly(pl, 'solid')))
+    Hh.hid.forEach(pl => body.push(Paper.poly(pl, 'hidden')))
+    const k1 = Math.ceil(body.length * 0.55)
+    return {
+      title: '斜二轴测图',
+      steps: [
+        step('1. 建立轴测轴', '斜二测：OX 水平、OZ 竖直，OY 与水平线成 45°，OY 方向取 0.5 倍。', body.slice(0, k1)),
+        step('2. 沿 Y 方向拉伸', '斜二测的正面反映实形；从正面各顶点沿 45° 方向量取 0.5×厚度，连接后端面。', body.slice(k1)),
+        step('3. 要点', '斜二测适合单方向形状复杂的零件：一个端面反映实形，画图最方便。', []),
+      ],
+    }
+  })
+
+  return { T, list: () => Object.values(T), get: id => T[id], def }
+})()
+
+  // ===== js/templates2d.js =====
+/* Templates2D — 几何作图 / 零件 题库 */
+const Templates2D = (() => {
+  const P = Paper.P, TAU = Math.PI * 2, C = Paper.C, D2R = Math.PI / 180
+  const T = {}
+  const def = (id, cat, name, build, tip = '') => { T[id] = { id, cat, name, build, tip } }
+  const step = (title, desc, els) => ({ title, desc, els: (els || []).filter(Boolean) })
+  const polar = (c, r, a) => [c[0] + r * Math.cos(a), c[1] + r * Math.sin(a)]
+  const ang = (c, p) => Math.atan2(p[1] - c[1], p[0] - c[0])
+
+  // 圆心在 O、半径 r：与另一圆 (c2,r2) 的交点（求连接弧圆心用）
+  function circleX(c1, r1, c2, r2) {
+    const d = Math.hypot(c2[0] - c1[0], c2[1] - c1[1])
+    if (d > r1 + r2 || d < Math.abs(r1 - r2) || d === 0) return []
+    const a = (r1 * r1 - r2 * r2 + d * d) / (2 * d)
+    const h = Math.sqrt(Math.max(0, r1 * r1 - a * a))
+    const mx = c1[0] + a * (c2[0] - c1[0]) / d, my = c1[1] + a * (c2[1] - c1[1]) / d
+    const ux = -(c2[1] - c1[1]) / d, uy = (c2[0] - c1[0]) / d
+    return [[mx + h * ux, my + h * uy], [mx - h * ux, my - h * uy]]
+  }
+  // 弧（角度制，逆时针从 a0 到 a1）
+  const arc = (c, r, a0, a1, st = 'solid', o = {}) => Paper.arc(c, r, a0 * D2R, a1 * D2R, st, o)
+
+  /* =========================================================
+   * 吊钩平面图形（对应教材 1-8 图）
+   * ========================================================= */
+  def('hook', 'draw', '吊钩平面图形（圆弧连接）', () => {
+    const O = [0, 0], R40 = 40, R20 = 20
+    const SX = 10, PY = 8, TOP = 85, SHOULDER = 70
+    const TIP = [-Math.sqrt(34 * 34 - 13 * 13), -13]      // 钩尖圆心：距 O 34、向下 13
+    // 右 R15：与 x=SX 相切、与 R40 外切
+    const cr = [SX + 15, Math.sqrt(55 * 55 - (SX + 15) ** 2)]
+    // 左 R15：与 x=-SX 相切、与 R20 外切
+    const cl = [-(SX + 15), Math.sqrt(35 * 35 - (SX + 15) ** 2)]
+    // R34：与 R40 内切、与 R4 外切
+    const angTip = Math.atan2(TIP[1], TIP[0])
+    const c34 = (() => {
+      const rO = R40 - 34, d = 38
+      const cos = (d * d - rO * rO - 34 * 34) / (-2 * rO * 34)
+      const t = Math.acos(Math.max(-1, Math.min(1, cos)))
+      return [rO * Math.cos(angTip + t), rO * Math.sin(angTip + t)]
+    })()
+    // R32：与 R20 内切、与 R4 外切
+    const c32 = (() => {
+      const rO = 32 - 20, d = 36
+      const cos = (d * d - rO * rO - 34 * 34) / (-2 * rO * 34)
+      const t = Math.acos(Math.max(-1, Math.min(1, cos)))
+      return [rO * Math.cos(angTip + t), rO * Math.sin(angTip + t)]
+    })()
+    const T = {
+      pR40: polar(O, R40, Math.atan2(cr[1], cr[0])),
+      pTip34: polar(TIP, 4, Math.atan2(c34[1] - TIP[1], c34[0] - TIP[0])),
+      pR34: polar(O, R40, Math.atan2(c34[1], c34[0])),
+      pR20L: polar(O, R20, Math.atan2(cl[1], cl[0])),
+      pTip32: polar(TIP, 4, Math.atan2(c32[1] - TIP[1], c32[0] - TIP[0])),
+      pR20_32: polar(O, R20, Math.atan2(c32[1], c32[0])),
+    }
+    const deg = p => Math.atan2(p[1], p[0]) * 180 / Math.PI
+    // 从 p1 到 p2 的弧，dir=+1 逆时针 / -1 顺时针
+    function arcDir(c, r, p1, p2, dir, st = 'thick', o = {}) {
+      let a0 = ang(c, p1) / D2R, a1 = ang(c, p2) / D2R
+      if (dir > 0) { while (a1 < a0) a1 += 360 } else { while (a1 > a0) a1 -= 360 }
+      const lo = Math.min(a0, a1), hi = Math.max(a0, a1)
+      return arc(c, r, lo, hi, st, { color: C.pick, ...o })
+    }
+    const L = (a, b, st = 'thick', o = {}) => Paper.line(a, b, st, { color: C.pick, ...o })
+    const CON = { color: '#c8ced6', dash: [1.8, 1.4], noAnim: true, w: 0.1 }
+    const cpt = (p, txt, off) => [Paper.dot(p, { color: C.aux, r: 0.45, noAnim: true }),
+      Paper.text([p[0] + off[0], p[1] + off[1]], txt, { size: 2.6, color: C.aux, anchor: 'middle', noAnim: true })]
+
+    // 1 基准线
+    const s1 = [
+      Paper.line([-48, 0], [48, 0], 'center'),
+      Paper.line([0, -48], [0, 98], 'center'),
+      Paper.line([-46, -13], [TIP[0] + 10, -13], 'center'),
+      Paper.line([TIP[0], -22], [TIP[0], -4], 'center'),
+    ]
+    // 2 已知线段
+    const s2 = [
+      L([-5, TOP], [5, TOP]), L([5, TOP], [PY, TOP - 3]), L([PY, TOP - 3], [PY, SHOULDER]),
+      L([-PY, SHOULDER], [-PY, TOP - 3]), L([-PY, TOP - 3], [-5, TOP]),
+      L([PY, SHOULDER], [SX, SHOULDER]), L([-SX, SHOULDER], [-PY, SHOULDER]),
+      L([SX, SHOULDER], [SX, cr[1]]), L([-SX, SHOULDER], [-SX, cl[1]]),
+      arcDir(O, R40, T.pR40, T.pR34, -1),
+      arcDir(O, R20, T.pR20L, T.pR20_32, +1),
+      Paper.circle(TIP, 4, 'thick', { color: C.pick }),
+    ]
+    // 3 右 R15
+    const s3 = [
+      Paper.circle(cr, 15, 'thin', CON),
+      Paper.line(cr, [SX, cr[1]], 'thin', CON),
+      ...cpt(cr, 'O1', [4, 3]),
+      arcDir(cr, 15, [SX, cr[1]], T.pR40, +1),
+    ]
+    // 4 左 R15
+    const s4 = [
+      Paper.circle(cl, 15, 'thin', CON),
+      Paper.line(cl, [-SX, cl[1]], 'thin', CON),
+      ...cpt(cl, 'O2', [-4, 3]),
+      arcDir(cl, 15, [-SX, cl[1]], T.pR20L, -1),
+    ]
+    // 5 钩尖
+    const s5 = [
+      Paper.circle(c34, 34, 'thin', CON),
+      Paper.circle(c32, 32, 'thin', CON),
+      ...cpt(c34, 'O3', [0, -4]),
+      ...cpt(c32, 'O4', [4, -3]),
+      arcDir(c34, 34, T.pR34, T.pTip34, -1),
+      arcDir(c32, 32, T.pR20_32, T.pTip32, -1),
+      arcDir(TIP, 4, T.pTip34, T.pTip32, +1),
+    ]
+    // 6 尺寸
+    const s6 = [
+      ...Paper.dimV(0, TOP, -30, '85', { from: -46 }),
+      ...Paper.dimV(-13, 0, -44, '13', { from: -46 }),
+      ...Paper.dimH(-PY, PY, TOP + 9, 'Ø16', { from: TOP }),
+      ...Paper.dimH(-SX, SX, SHOULDER - 14, 'Ø20', { from: SHOULDER - 10 }),
+      ...Paper.dimV(SHOULDER, TOP, 18, '16', { from: PY }),
+      ...Paper.leader([PY + 0.8, TOP - 2], [1, 1.2], 'C3', { len: 9 }),
+      ...Paper.leader(polar(cr, 15, -52 * D2R), [1, 0.3], 'R15', { len: 8 }),
+      ...Paper.leader(polar(cl, 15, -38 * D2R), [-1, 0.25], 'R15', { len: 8 }),
+      ...Paper.leader(polar(c34, 34, 214 * D2R), [0.5, -0.85], 'R34', { len: 9 }),
+      ...Paper.leader(polar(c32, 32, 236 * D2R), [-0.45, -0.9], 'R32', { len: 9 }),
+      ...Paper.leader(polar(TIP, 4, 168 * D2R), [-1, 0.15], 'R4', { len: 7 }),
+      ...Paper.leader(polar(O, 40, 24 * D2R), [0.75, -0.66], 'R40', { len: 11 }),
+      ...Paper.leader(polar(O, 20, -38 * D2R), [0.65, -0.76], 'R20', { len: 11 }),
+    ]
+    return {
+      title: '吊钩平面图形',
+      steps: [
+        step('1. 画基准线', '定出圆心 O（R40、R20 的公共圆心）、竖直中心线，以及钩尖中心线——它距 O 向下 13。', s1),
+        step('2. 画已知线段', '已知线段可直接按尺寸画出：R40 外圆、R20 内圆、Ø20 两条竖线、Ø16 顶圆及 C3 倒角，总高 85。', s2),
+        step('3. 右 R15 连接弧', 'R15 同时与 Ø20 右侧竖线、R40 外圆相切：圆心距竖线 15、距 O 为 55，两条件交点即 O₁。', s3),
+        step('4. 左 R15 连接弧', '左 R15 与 Ø20 左侧竖线、R20 内圆相切：圆心距竖线 15、距 O 为 20+15=35，得 O₂。', s4),
+        step('5. 求钩尖连接弧', 'R34 与 R40 内切（圆心距 O 为 6）、与 R4 外切（距钩尖 38）；R32 与 R20 内切（距 O 12）、与 R4 外切（距钩尖 36）。作两段辅助圆弧求交点 O₃、O₄。', s5),
+        step('6. 标注尺寸', '定形尺寸：Ø16、Ø20、R40、R20、R34、R32、R15、R4、C3；定位尺寸：85、13、16。', s6),
+        step('7. 作图要领', '先画已知线段 → 再画中间线段 → 最后画连接线段。每一步都是"求圆心、定切点、画弧"三件事。', []),
+      ],
+    }
+  })
+
+  /* =========================================================
+   * 圆弧连接四例
+   * ========================================================= */
+  def('arcConn', 'draw', '圆弧连接（四种基本形式）', () => {
+    const panels = []
+    const L = (a, b, st = 'thick', o = {}) => Paper.line(a, b, st, { color: C.pick, ...o })
+    // ① 两直线间
+    {
+      const V = [10, 8], R = 9, half = 30 * D2R
+      const bis = 30 * D2R
+      const d = R / Math.sin(half)
+      const c = [V[0] + d * Math.cos(bis), V[1] + d * Math.sin(bis)]
+      const t1 = [c[0], V[1]]
+      const t2 = [V[0] + (c[0] - V[0]) * Math.cos(2 * bis), V[1] + (c[0] - V[0]) * Math.sin(2 * bis)]
+      const els = [
+        L(V, [V[0] + 30, V[1]], 'solid'), L(V, [V[0] + 24 * Math.cos(60 * D2R), V[1] + 24 * Math.sin(60 * D2R)], 'solid'),
+        arc(c, R, ang(c, t1) / D2R, ang(c, t2) / D2R, 'thick', { color: C.pick }),
+        Paper.dot(c, { color: C.aux, r: 0.45, noAnim: true }),
+        ...Paper.leader(polar(c, R, 40 * D2R), [1, 0.2], 'R', { len: 5 }),
+      ]
+      panels.push({ o: [0, 0], els, label: '① 两直线间' })
+    }
+    // ② 直线与圆弧
+    {
+      const lineY = 10, c1 = [34, 26], r1 = 8, R = 12
+      const c = [c1[0], lineY + R]
+      // 与圆外切：|c-c1| = r1+R
+      const dx = Math.sqrt((r1 + R) ** 2 - (c[1] - c1[1]) ** 2)
+      c[0] = c1[0] - dx
+      const t1 = [c[0], lineY], t2 = polar(c1, r1, ang(c1, c) / 1)
+      const a2 = ang(c1, c)
+      const els = [
+        L([6, lineY], [46, lineY], 'solid'),
+        Paper.arc(c1, r1, 0, TAU, 'solid', { color: C.pick }),
+        arc(c, R, ang(c, t1) / D2R, ang(c, t2) / D2R, 'thick', { color: C.pick }),
+        Paper.dot(c, { color: C.aux, r: 0.45, noAnim: true }),
+        ...Paper.leader(polar(c, R, 75 * D2R), [1, 0.3], 'R', { len: 5 }),
+      ]
+      panels.push({ o: [0, -36], els, label: '② 直线与圆弧' })
+    }
+    // ③ 两圆弧外切
+    {
+      const c1 = [14, 14], r1 = 7, c2 = [36, 22], r2 = 5, R = 10
+      const cs = circleX(c1, r1 + R, c2, r2 + R)
+      const c = cs[0] || cs[1]
+      const els = [
+        Paper.arc(c1, r1, 0, TAU, 'solid', { color: C.pick }),
+        Paper.arc(c2, r2, 0, TAU, 'solid', { color: C.pick }),
+        arc(c, R, ang(c, polar(c1, r1, ang(c1, c))) / D2R, ang(c, polar(c2, r2, ang(c2, c))) / D2R, 'thick', { color: C.pick }),
+        Paper.dot(c, { color: C.aux, r: 0.45, noAnim: true }),
+        ...Paper.leader(polar(c, R, 200 * D2R), [-1, -0.3], 'R', { len: 5 }),
+      ]
+      panels.push({ o: [58, 0], els, label: '③ 两圆弧外切' })
+    }
+    // ④ 两圆弧内切
+    {
+      const c1 = [72, 14], r1 = 7, c2 = [94, 22], r2 = 5, R = 24
+      const cs = circleX(c1, Math.abs(R - r1), c2, Math.abs(R - r2))
+      const c = cs[0] || cs[1]
+      const els = [
+        Paper.arc(c1, r1, 0, TAU, 'solid', { color: C.pick }),
+        Paper.arc(c2, r2, 0, TAU, 'solid', { color: C.pick }),
+        arc(c, R, ang(c, polar(c1, r1, ang(c1, c))) / D2R, ang(c, polar(c2, r2, ang(c2, c))) / D2R, 'thick', { color: C.pick }),
+        Paper.dot(c, { color: C.aux, r: 0.45, noAnim: true }),
+        ...Paper.leader(polar(c, R, 150 * D2R), [-1, 0.2], 'R', { len: 5 }),
+      ]
+      panels.push({ o: [58, -36], els, label: '④ 两圆弧内切' })
+    }
+    const els1 = [], els2 = [], els3 = [], els4 = []
+    const groups = [els1, els2, els3, els4]
+    panels.forEach((p, i) => {
+      const moved = p.els.map(e => {
+        const copy = { ...e }
+        if (copy.a) copy.a = [copy.a[0] + p.o[0], copy.a[1] + p.o[1]]
+        if (copy.b) copy.b = [copy.b[0] + p.o[0], copy.b[1] + p.o[1]]
+        if (copy.p) copy.p = [copy.p[0] + p.o[0], copy.p[1] + p.o[1]]
+        if (copy.c) copy.c = [copy.c[0] + p.o[0], copy.c[1] + p.o[1]]
+        if (copy.pts) copy.pts = copy.pts.map(q => [q[0] + p.o[0], q[1] + p.o[1]])
+        if (copy.tip) copy.tip = [copy.tip[0] + p.o[0], copy.tip[1] + p.o[1]]
+        if (copy.from) copy.from = [copy.from[0] + p.o[0], copy.from[1] + p.o[1]]
+        return copy
+      })
+      groups[i].push(...moved)
+      groups[i].push(Paper.text([p.o[0] + 26, p.o[1] - 6], p.label, { size: 3.2, color: '#333', noAnim: true }))
+    })
+    return {
+      title: '圆弧连接（四种基本形式）',
+      steps: [
+        step('① 两直线间圆弧连接', '作与两直线距离均为 R 的平行线，交点即连接弧圆心；过圆心作两直线的垂线得切点。', els1),
+        step('② 直线与圆弧连接', '作与直线相距 R 的平行线；以已知圆心为圆心、r+R 为半径画弧，与平行线的交点即圆心。', els2),
+        step('③ 两圆弧外切', '分别以两已知圆心为圆心，以 r₁+R、r₂+R 为半径画弧，交点即连接弧圆心（外切相加）。', els3),
+        step('④ 两圆弧内切', '以 |R-r₁|、|R-r₂| 为半径画弧求交点（内切相减）。', els4),
+        step('⑤ 总结', '求连接弧圆心：外切用 r+R，内切用 |R-r|；切点在两圆心连线上。', []),
+      ],
+    }
+  })
+
+  /* =========================================================
+   * 零件图
+   * ========================================================= */
+  def('shaft', 'part', '阶梯轴零件图', () => {
+    const segs = [{ d: 20, l: 55 }, { d: 30, l: 70 }, { d: 25, l: 45 }]
+    const total = segs.reduce((s, x) => s + x.l, 0)
+    const x0 = -total / 2, zc = 0
+    const els = [Paper.line([x0 - 6, 0], [x0 + total + 6, 0], 'center')]
+    let x = x0
+    const steps = [step('1. 画中心线', '回转体零件先画轴线。', els.slice())]
+    const body = []
+    segs.forEach((s, i) => {
+      const h = s.d / 2
+      body.push(Paper.line([x, -h], [x + s.l, -h], 'thick', { color: C.pick }))
+      body.push(Paper.line([x, h], [x + s.l, h], 'thick', { color: C.pick }))
+      if (i > 0) body.push(Paper.line([x, -h], [x, -segs[i - 1].d / 2], 'thick', { color: C.pick }))
+      if (i > 0) body.push(Paper.line([x, h], [x, segs[i - 1].d / 2], 'thick', { color: C.pick }))
+      x += s.l
+    })
+    body.push(Paper.line([x, -segs[2].d / 2], [x, segs[2].d / 2], 'thick', { color: C.pick }))
+    steps.push(step('2. 画轮廓', '按各段直径和长度，上下对称画出阶梯轮廓。', body))
+    const dims = []
+    let dx = x0
+    segs.forEach(s => {
+      dims.push(...Paper.dimH(dx, dx + s.l, -30, String(s.l)))
+      dims.push(...Paper.dimV(-s.d / 2, s.d / 2, dx + s.l / 2, 'Ø' + s.d))
+      dx += s.l
+    })
+    dims.push(...Paper.dimH(x0, x0 + total, -44, String(total)))
+    steps.push(step('3. 标注尺寸', '径向尺寸用 Ø，轴向尺寸按分段标注，最后标总长。', dims))
+    return { title: '阶梯轴', steps }
+  })
+
+  def('flange', 'part', '法兰盘零件图', () => {
+    const od = 90, id = 45, bc = 70, n = 6, bd = 10, th = 18
+    const c = [0, 0]
+    const s1 = [Paper.line([-od / 2 - 8, 0], [od / 2 + 8, 0], 'center'), Paper.line([0, -od / 2 - 8], [0, od / 2 + 8], 'center')]
+    const s2 = [
+      Paper.circle(c, od / 2, 'thick', { color: C.pick }),
+      Paper.circle(c, id / 2, 'thick', { color: C.pick }),
+      Paper.circle(c, bc / 2, 'center'),
+    ]
+    const holes = []
+    for (let i = 0; i < n; i++) {
+      const a = TAU * i / n + Math.PI / 2
+      holes.push(Paper.circle([bc / 2 * Math.cos(a), bc / 2 * Math.sin(a)], bd / 2, 'thick', { color: C.pick }))
+      holes.push(Paper.line([0, 0], [bc / 2 * Math.cos(a), bc / 2 * Math.sin(a)], 'center'))
+    }
+    const dims = [
+      ...Paper.dimD(c, od / 2, -35 * D2R, 'Ø' + od),
+      ...Paper.dimD(c, id / 2, 145 * D2R, 'Ø' + id),
+      ...Paper.leader([bc / 2 * Math.cos(30 * D2R), bc / 2 * Math.sin(30 * D2R)], [0.8, -0.6], 'Ø' + bc, { len: 12 }),
+      ...Paper.leader([bc / 2 + bd / 2, 0], [1, 0.2], '6×Ø' + bd, { len: 10 }),
+    ]
+    return {
+      title: '法兰盘',
+      steps: [
+        step('1. 画中心线', '十字中心线定圆心，螺栓孔分布圆用点划线。', s1),
+        step('2. 画外圆与内孔', `外径 Ø${od}，内孔 Ø${id}。`, s2),
+        step('3. 画螺栓孔', `${n} 个 Ø${bd} 螺栓孔均匀分布在 Ø${bc} 的分布圆上。`, holes),
+        step('4. 标注尺寸', '直径尺寸尽量标注在非圆视图上，此处用引出标注。', dims),
+      ],
+    }
+  })
+
+  def('bracket', 'part', 'L 形支架零件图', () => {
+    const bl = 70, bw = 40, h = 55, t = 14, hd = 14
+    const s1 = [Paper.line([-8, 0], [bl + 12, 0], 'center'), Paper.line([0, -8], [0, h + 10], 'center')]
+    const s2 = [
+      Paper.poly([[-bl / 2, 0], [bl / 2, 0], [bl / 2, t], [-bl / 2 + t, t], [-bl / 2 + t, h], [-bl / 2, h]], 'thick', true, { color: C.pick }),
+    ]
+    const s3 = [
+      Paper.circle([-bl / 2 + t / 2, h - t - 8], hd / 2, 'thick', { color: C.pick }),
+      Paper.line([-bl / 2 + t / 2 - 12, h - t - 8], [-bl / 2 + t / 2 + 12, h - t - 8], 'center'),
+      Paper.line([-bl / 2 + t / 2, h - t - 8 - 12], [-bl / 2 + t / 2, h - t - 8 + 12], 'center'),
+    ]
+    const s4 = [
+      ...Paper.dimH(-bl / 2, bl / 2, -14, String(bl)),
+      ...Paper.dimV(0, h, bl / 2 + 10, String(h)),
+      ...Paper.dimV(0, t, -bl / 2 - 10, String(t)),
+      ...Paper.leader([-bl / 2 + t / 2 + hd / 2, h - t - 8], [1, 0.3], 'Ø' + hd, { len: 10 }),
+    ]
+    return {
+      title: 'L 形支架',
+      steps: [
+        step('1. 画基准线', '以底面和左侧面为基准。', s1),
+        step('2. 画 L 形轮廓', `底板长 ${bl}、厚 ${t}，立板高 ${h}。`, s2),
+        step('3. 画安装孔', `立板上 Ø${hd} 安装孔，中心距底面 ${h - t - 8}。`, s3),
+        step('4. 标注尺寸', '先标定形尺寸（长、高、厚、孔径），再标定位尺寸。', s4),
+      ],
+    }
+  })
+
+  return { T, list: () => Object.values(T), get: id => T[id], def }
+})()
 
   // ===== js/engine.js =====
+/* Engine — Canvas 渲染器
+ * 把 Paper 元素按图幅自适应缩放画出，支持逐步绘制动画
+ */
 class DrawEngine {
-  constructor(canvasId) {
-    this.canvas = document.getElementById(canvasId)
-    this.ctx = this.canvas.getContext('2d')
-    this.clear()
+  constructor(canvas) {
+    this.canvas = canvas
+    this.ctx = canvas.getContext('2d')
+    this.dpr = Math.min(window.devicePixelRatio || 1, 2)
+    this.scale = 1
+    this.ox = 0
+    this.oy = 0
+    this.resize()
+    window.addEventListener('resize', () => { this.resize(); this._redraw() })
   }
-  clear() {
-    this.ctx.fillStyle = '#fff'
-    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
+
+  resize() {
+    const r = this.canvas.getBoundingClientRect()
+    this.W = Math.max(320, r.width || 900)
+    this.H = Math.max(240, r.height || 560)
+    this.canvas.width = this.W * this.dpr
+    this.canvas.height = this.H * this.dpr
+    this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0)
+    this._redraw()
   }
-  drawElement(el, progress = 1) {
+
+  setDrawing(drawing) {
+    this.drawing = drawing
+    const all = []
+    drawing.steps.forEach(s => all.push(...s.els))
+    const bb = Paper.bbox(all)
+    const M = 24
+    const sw = Math.max(10, bb.w), sh = Math.max(10, bb.h)
+    this.scale = Math.min((this.W - 2 * M) / sw, (this.H - 2 * M) / sh, 9.5)
+    this.ox = (this.W - bb.w * this.scale) / 2 - bb.x0 * this.scale
+    this.oy = (this.H + bb.h * this.scale) / 2 + bb.y0 * this.scale
+    this._redraw()
+  }
+
+  setState(state) { this.state = state; this._redraw() }
+
+  _redraw() {
+    if (this.drawing) this.draw(this.state || { step: 0, t: 1 })
+    else {
+      const ctx = this.ctx
+      ctx.fillStyle = '#fff'
+      ctx.fillRect(0, 0, this.W, this.H)
+    }
+  }
+
+  tx(p) { return [this.ox + p[0] * this.scale, this.oy - p[1] * this.scale] }
+
+  draw(state) {
     const ctx = this.ctx
     ctx.save()
-    switch (el.type) {
-      case 'centerline':
-        this._drawLine(el.x1, el.y1, el.x2, el.y2, progress, '#333', 0.8, [12,4,2,4])
-        break
-      case 'line':
-        this._drawLine(el.x1, el.y1, el.x2, el.y2, progress, '#000', 2)
-        break
-      case 'rect':
-        this._drawRect(el.x, el.y, el.w, el.h, progress)
-        break
-      case 'circle':
-        this._drawCircle(el.cx, el.cy, el.r, progress, el.dashed)
-        break
-      case 'arc':
-        this._drawArc(el.cx, el.cy, el.r, el.startAngle, el.endAngle, progress)
-        break
-      case 'dim':
-        this._drawDim(el, progress)
-        break
+    ctx.fillStyle = '#fff'
+    ctx.fillRect(0, 0, this.W, this.H)
+    ctx.strokeStyle = '#e2e6ea'
+    ctx.lineWidth = 1
+    ctx.strokeRect(10.5, 10.5, this.W - 21, this.H - 21)
+
+    const steps = this.drawing.steps
+    const si = Math.min(state.step, steps.length - 1)
+    for (let k = 0; k <= si; k++) {
+      const st = steps[k]
+      const n = st.els.length
+      const isCurrent = k === si
+      const prog = isCurrent ? state.t : 1
+      st.els.forEach((el, i) => {
+        let local = 1
+        if (isCurrent && n > 1) {
+          const start = (i / n) * 0.62
+          local = Math.max(0, Math.min(1, (prog - start) / 0.38))
+        }
+        if (local <= 0) return
+        this.drawEl(el, local)
+      })
     }
     ctx.restore()
   }
-  _drawLine(x1, y1, x2, y2, progress, color, width, dash = []) {
-    const ctx = this.ctx
-    ctx.strokeStyle = color
-    ctx.lineWidth = width
-    ctx.setLineDash(dash)
-    ctx.beginPath()
-    ctx.moveTo(x1, y1)
-    ctx.lineTo(x1 + (x2-x1)*progress, y1 + (y2-y1)*progress)
-    ctx.stroke()
+
+  styleOf(el) {
+    const st = Paper.ST[el.st || 'solid'] || Paper.ST.solid
+    return { w: (el.w != null ? el.w : st.w) * this.scale, dash: (el.dash || st.dash).map(d => d * this.scale) }
   }
-  _drawRect(x, y, w, h, progress) {
+
+  drawEl(el, p) {
     const ctx = this.ctx
-    ctx.strokeStyle = '#000'
-    ctx.lineWidth = 2.5
-    ctx.setLineDash([])
-    ctx.beginPath()
-    const dist = 2*(w+h) * progress
-    ctx.moveTo(x, y)
-    if (dist > 0) {
-      const d1 = Math.min(dist, w)
-      ctx.lineTo(x+d1, y)
-      if (dist > w) {
-        const d2 = Math.min(dist-w, h)
-        ctx.lineTo(x+w, y+d2)
-        if (dist > w+h) {
-          const d3 = Math.min(dist-w-h, w)
-          ctx.lineTo(x+w-d3, y+h)
-          if (dist > w+h+w) {
-            ctx.lineTo(x, y+h-(dist-w-h-w))
-          }
+    const { w, dash } = this.styleOf(el)
+    ctx.save()
+    ctx.lineWidth = Math.max(0.7, w)
+    ctx.setLineDash(dash)
+    ctx.lineCap = 'round'
+    ctx.lineJoin = 'round'
+    ctx.strokeStyle = el.color || (el.st === 'hidden' ? '#4a4a4a' : '#1a1a1a')
+    ctx.fillStyle = el.color || '#1a1a1a'
+    if (el.st === 'center') ctx.strokeStyle = el.color || '#5a6570'
+
+    if (el.t === 'line') {
+      const a = this.tx(el.a), b = this.tx(el.b)
+      ctx.beginPath(); ctx.moveTo(a[0], a[1])
+      ctx.lineTo(a[0] + (b[0] - a[0]) * p, a[1] + (b[1] - a[1]) * p)
+      ctx.stroke()
+    } else if (el.t === 'poly') {
+      const pts = el.pts.map(q => this.tx(q))
+      if (pts.length < 2) { ctx.restore(); return }
+      const total = polyLen(pts)
+      let target = total * p, acc = 0
+      ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1])
+      for (let i = 1; i < pts.length; i++) {
+        const seg = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1])
+        if (acc + seg <= target) { ctx.lineTo(pts[i][0], pts[i][1]); acc += seg }
+        else {
+          const r = seg > 0 ? (target - acc) / seg : 1
+          ctx.lineTo(pts[i - 1][0] + (pts[i][0] - pts[i - 1][0]) * r, pts[i - 1][1] + (pts[i][1] - pts[i - 1][1]) * r)
+          break
         }
       }
+      if (el.closed && p >= 1) ctx.closePath()
+      if (el.fill) ctx.fill(); else ctx.stroke()
+    } else if (el.t === 'circle') {
+      const c = this.tx(el.c)
+      ctx.beginPath()
+      ctx.arc(c[0], c[1], Math.max(1, el.r * this.scale), -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * p)
+      ctx.stroke()
+    } else if (el.t === 'arc') {
+      const c = this.tx(el.c)
+      let a0 = el.a0, a1 = el.a1
+      while (a1 < a0) a1 += Math.PI * 2
+      ctx.beginPath()
+      ctx.arc(c[0], c[1], Math.max(1, el.r * this.scale), -a0, -(a0 + (a1 - a0) * p), true)
+      ctx.stroke()
+    } else if (el.t === 'dot') {
+      if (p < 0.5) { ctx.restore(); return }
+      const c = this.tx(el.p), r = Math.max(2, el.r * this.scale)
+      ctx.beginPath(); ctx.arc(c[0], c[1], r, 0, Math.PI * 2)
+      if (el.hollow) { ctx.fillStyle = '#fff'; ctx.fill(); ctx.stroke() }
+      else ctx.fill()
+    } else if (el.t === 'arrow') {
+      if (p < 0.4) { ctx.restore(); return }
+      const tip = this.tx(el.tip), from = this.tx(el.from)
+      const d = [tip[0] - from[0], tip[1] - from[1]], L = Math.hypot(d[0], d[1]) || 1
+      const u = [d[0] / L, d[1] / L], nn = [-u[1], u[0]]
+      const len = Math.min(L, 9), wid = 3.2
+      ctx.beginPath()
+      ctx.moveTo(tip[0], tip[1])
+      ctx.lineTo(tip[0] - u[0] * len + nn[0] * wid, tip[1] - u[1] * len + nn[1] * wid)
+      ctx.lineTo(tip[0] - u[0] * len - nn[0] * wid, tip[1] - u[1] * len - nn[1] * wid)
+      ctx.closePath(); ctx.fill()
+    } else if (el.t === 'text') {
+      if (p < 0.55) { ctx.restore(); return }
+      const c = this.tx(el.p)
+      let fs = el.size * this.scale
+      fs = Math.max(10.5, Math.min(30, fs))
+      ctx.font = `${el.italic ? 'italic ' : ''}${fs}px ${el.italic ? '"Times New Roman", "Songti SC", serif' : '"Segoe UI", "Microsoft YaHei", sans-serif'}`
+      ctx.textAlign = el.anchor === 'start' ? 'left' : el.anchor === 'end' ? 'right' : 'center'
+      ctx.textBaseline = 'middle'
+      if (el.rot) {
+        ctx.translate(c[0], c[1]); ctx.rotate(-el.rot)
+        ctx.fillText(el.s, 0, 0)
+      } else ctx.fillText(el.s, c[0], c[1])
     }
-    ctx.stroke()
-  }
-  _drawCircle(cx, cy, r, progress, dashed = false) {
-    const ctx = this.ctx
-    ctx.strokeStyle = '#000'
-    ctx.lineWidth = dashed ? 0.8 : 2
-    ctx.setLineDash(dashed ? [12,4,2,4] : [])
-    ctx.beginPath()
-    ctx.arc(cx, cy, r, -Math.PI/2, -Math.PI/2 + Math.PI*2*progress)
-    ctx.stroke()
-  }
-  _drawArc(cx, cy, r, startAngle, endAngle, progress) {
-    const ctx = this.ctx
-    ctx.strokeStyle = '#000'
-    ctx.lineWidth = 2
-    ctx.beginPath()
-    ctx.arc(cx, cy, r, startAngle, startAngle + (endAngle-startAngle)*progress)
-    ctx.stroke()
-  }
-  _drawDim(el, progress) {
-    const ctx = this.ctx
-    ctx.strokeStyle = '#333'
-    ctx.lineWidth = 0.5
-    ctx.beginPath()
-    ctx.moveTo(el.x1, el.y1)
-    ctx.lineTo(el.x1 + (el.x2-el.x1)*progress, el.y1 + (el.y2-el.y1)*progress)
-    ctx.stroke()
-    if (el.text && progress > 0.5) {
-      ctx.fillStyle = '#000'
-      ctx.font = '12px sans-serif'
-      ctx.textAlign = 'center'
-      ctx.fillText(el.text, (el.x1+el.x2)/2, el.y1 - 5)
-    }
-  }
-  drawStepComplete(step) {
-    step.elements.forEach(el => this.drawElement(el, 1))
+    ctx.restore()
   }
 }
 
+function polyLen(pts) {
+  let s = 0
+  for (let i = 1; i < pts.length; i++) s += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1])
+  return s
+}
+
   // ===== js/player.js =====
+/* Player — 步骤播放器 */
 class Player {
-  constructor(engine) {
+  constructor(engine, ui) {
     this.engine = engine
+    this.ui = ui
     this.steps = []
-    this.currentStep = -1
+    this.current = 0
+    this.t = 0
     this.playing = false
     this.speed = 1
-    this.btnPrev = document.getElementById('btn-prev')
-    this.btnPlay = document.getElementById('btn-play')
-    this.btnNext = document.getElementById('btn-next')
-    this.speedSelect = document.getElementById('speed-select')
-    this.stepCurrent = document.getElementById('step-current')
-    this.stepTotal = document.getElementById('step-total')
-    this.stepList = document.getElementById('step-list')
-    this.stepDesc = document.getElementById('step-desc')
-    this.btnPrev.onclick = () => this.prev()
-    this.btnNext.onclick = () => this.next()
-    this.btnPlay.onclick = () => this.togglePlay()
-    this.speedSelect.onchange = (e) => { this.speed = parseFloat(e.target.value) }
+    this.last = 0
+    this._raf = null
+    this._loop = this._loop.bind(this)
+    this.ui.btnPrev.onclick = () => this.prev()
+    this.ui.btnNext.onclick = () => this.next()
+    this.ui.btnPlay.onclick = () => this.toggle()
+    this.ui.speedSelect.onchange = e => { this.speed = parseFloat(e.target.value) }
   }
-  loadSteps(steps) {
-    this.steps = steps
-    this.currentStep = -1
-    this.engine.clear()
-    this._renderStepList()
-    this._updateUI()
-    this.stepTotal.textContent = steps.length
+
+  load(drawing) {
+    this.drawing = drawing
+    this.steps = drawing.steps
+    this.current = 0
+    this.t = 1
+    this.playing = false
+    this.engine.setDrawing(drawing)
+    this.renderStepList()
+    this.update()
+    this.engine.setState({ step: 0, t: 1 })
   }
-  _renderStepList() {
-    this.stepList.innerHTML = ''
-    this.steps.forEach((step, i) => {
-      const div = document.createElement('div')
-      div.className = 'step-item'
-      div.textContent = `${i+1}. ${step.desc.slice(0,30)}...`
-      div.onclick = () => this.jumpTo(i)
-      this.stepList.appendChild(div)
+
+  renderStepList() {
+    const box = this.ui.stepList
+    box.innerHTML = ''
+    this.steps.forEach((s, i) => {
+      const d = document.createElement('div')
+      d.className = 'step-item'
+      d.innerHTML = `<span class="idx">${i + 1}</span><span class="tt">${s.title.replace(/^\d+[.、]\s*/, '')}</span>`
+      d.onclick = () => this.jump(i)
+      box.appendChild(d)
     })
   }
-  _highlightStep() {
-    const items = this.stepList.querySelectorAll('.step-item')
-    items.forEach((el, i) => {
-      el.classList.remove('current','done')
-      if (i < this.currentStep) el.classList.add('done')
-      if (i === this.currentStep) el.classList.add('current')
+
+  update() {
+    const s = this.steps[this.current]
+    this.ui.stepCurrent.textContent = this.current + 1
+    this.ui.stepTotal.textContent = this.steps.length
+    this.ui.stepDesc.textContent = s ? s.desc : '—'
+    this.ui.stepTitle.textContent = s ? s.title : ''
+    this.ui.partName.textContent = this.drawing.title || ''
+    this.ui.btnPrev.disabled = this.current <= 0
+    this.ui.btnNext.disabled = this.current >= this.steps.length - 1
+    this.ui.btnPlay.disabled = this.steps.length === 0
+    this.ui.btnPlay.textContent = this.playing ? '⏸ 暂停' : (this.current >= this.steps.length - 1 ? '↻ 重播' : '▶ 播放')
+    ;[...this.ui.stepList.children].forEach((el, i) => {
+      el.classList.toggle('current', i === this.current)
+      el.classList.toggle('done', i < this.current)
     })
+    const cur = this.ui.stepList.children[this.current]
+    if (cur && cur.scrollIntoView) cur.scrollIntoView({ block: 'nearest' })
   }
-  _updateUI() {
-    this.stepCurrent.textContent = this.currentStep + 1
-    this.btnPrev.disabled = this.currentStep <= 0
-    this.btnNext.disabled = this.currentStep >= this.steps.length - 1
-    this.btnPlay.disabled = this.steps.length === 0
-    if (this.currentStep >= 0 && this.steps[this.currentStep]) {
-      this.stepDesc.textContent = this.steps[this.currentStep].desc
-    }
-    this._highlightStep()
+
+  jump(i) {
+    this.playing = false
+    this.current = Math.max(0, Math.min(this.steps.length - 1, i))
+    this.t = 1
+    this.engine.setState({ step: this.current, t: 1 })
+    this.update()
   }
-  async next() {
-    if (this.currentStep >= this.steps.length - 1) return
-    this.currentStep++
-    this._updateUI()
-    await this._animateStep(this.currentStep)
-    if (this.playing && this.currentStep < this.steps.length - 1) {
-      setTimeout(() => this.next(), 800 / this.speed)
-    } else if (this.currentStep >= this.steps.length - 1) {
-      this.playing = false
-      this.btnPlay.textContent = '▶ 播放'
+
+  next() {
+    if (this.current < this.steps.length - 1) {
+      this.current++
+      this.t = 1
+      this.engine.setState({ step: this.current, t: 1 })
+      this.update()
     }
   }
+
   prev() {
-    if (this.currentStep <= 0) return
     this.playing = false
-    this.btnPlay.textContent = '▶ 播放'
-    this.currentStep--
-    this.engine.clear()
-    for (let i = 0; i <= this.currentStep; i++) this.engine.drawStepComplete(this.steps[i])
-    this._updateUI()
+    if (this.current > 0) this.current--
+    this.t = 1
+    this.engine.setState({ step: this.current, t: 1 })
+    this.update()
   }
-  jumpTo(i) {
-    this.playing = false
-    this.btnPlay.textContent = '▶ 播放'
-    this.currentStep = i
-    this.engine.clear()
-    for (let j = 0; j <= i; j++) this.engine.drawStepComplete(this.steps[j])
-    this._updateUI()
-  }
-  togglePlay() {
-    if (this.playing) {
-      this.playing = false
-      this.btnPlay.textContent = '▶ 播放'
-    } else {
-      this.playing = true
-      this.btnPlay.textContent = '⏸ 暂停'
-      if (this.currentStep >= this.steps.length - 1) {
-        this.currentStep = -1
-        this.engine.clear()
-      }
-      this.next()
+
+  toggle() {
+    if (this.playing) { this.playing = false; this.update(); return }
+    if (this.current >= this.steps.length - 1) {
+      this.current = 0
+      this.t = 0
+      this.engine.setState({ step: 0, t: 0 })
     }
+    this.playing = true
+    this.last = performance.now()
+    this.update()
+    if (!this._raf) this._raf = requestAnimationFrame(this._loop)
   }
-  _animateStep(stepIdx) {
-    return new Promise(resolve => {
-      const step = this.steps[stepIdx]
-      const elements = step.elements
-      let elIdx = 0, progress = 0
-      const animate = () => {
-        if (elIdx >= elements.length) { resolve(); return }
-        progress += 0.08
-        if (progress >= 1) progress = 1
-        this.engine.clear()
-        for (let i = 0; i < stepIdx; i++) this.engine.drawStepComplete(this.steps[i])
-        for (let i = 0; i < elIdx; i++) this.engine.drawElement(elements[i], 1)
-        this.engine.drawElement(elements[elIdx], progress)
-        if (progress >= 1) { elIdx++; progress = 0 }
-        requestAnimationFrame(animate)
+
+  _loop(now) {
+    this._raf = null
+    if (!this.playing) return
+    const dt = Math.min(80, now - this.last)
+    this.last = now
+    const dur = 1600 / this.speed
+    this.t += dt / dur
+    if (this.t >= 1) {
+      this.t = 1
+      this.engine.setState({ step: this.current, t: 1 })
+      if (this.current < this.steps.length - 1) {
+        this.current++
+        this.t = 0
+        this.update()
+        this.engine.setState({ step: this.current, t: 0 })
+        this.last = performance.now()
+      } else {
+        this.playing = false
+        this.update()
+        return
       }
-      animate()
-    })
+    } else {
+      this.engine.setState({ step: this.current, t: this.t })
+    }
+    this._raf = requestAnimationFrame(this._loop)
   }
 }
 
   // ===== js/llm.js =====
+/* LLM 识图：把题目照片映射到题型 + 参数 */
 class LLMRecognizer {
   async recognize(imageFile) {
     if (!AppConfig.hasApiKey) throw new Error('请先在右上角设置中填入 API Key')
     const base64 = await this._fileToBase64(imageFile)
-    const prompt = `你是一个机械制图老师。看这张零件图，读出零件类型和所有尺寸参数。
+    const prompt = `你是《机械制图》课程助教。看这张题目照片，判断题型，并从下面的题库中选一个 type，提取图中的尺寸参数（单位 mm，读不到的用默认值）。
 
-只输出 JSON，不要解释，不要 markdown 代码块。
+题库（type: 说明 / 参数）：
+- point3: 点的三面投影 / {x,y,z}
+- line3: 直线三面投影 / {kind:"general"|"horizontal"}
+- plane3: 平面的三面投影 / {}
+- prism3: 棱柱三视图并求表面点 / {sides:3~8, R:外接圆半径, h:高}
+- pyramid3: 棱锥三视图并求表面点 / {sides, R, h}
+- cylinder3: 圆柱三视图并求表面点 / {r, h}
+- cone3: 圆锥三视图并求表面点 / {r, h}
+- sphere3: 圆球三视图并求表面点 / {r}
+- prismCut: 棱柱被正垂面截切 / {angle:截平面倾角}
+- cylCut: 圆柱被正垂面斜切 / {angle}
+- coneCut: 圆锥截交 / {kind:"ellipse"|"parabola"|"hyperbola"|"circle"|"triangle"}
+- interCyl: 两圆柱正交相贯 / {}
+- comboStack: 叠加式组合体三视图 / {}
+- comboCut: 切割式组合体三视图 / {}
+- axoIso: 正等轴测图 / {}
+- axoCab: 斜二轴测图 / {}
+- hook: 吊钩平面图形（圆弧连接） / {}
+- arcConn: 圆弧连接基本形式 / {}
+- shaft: 阶梯轴零件图 / {}
+- flange: 法兰盘零件图 / {}
+- bracket: L 形支架零件图 / {}
 
-零件类型有三种：
-- "shaft"：轴类（回转体，有水平中心线贯穿，多段圆柱）
-- "flange"：法兰盘类（圆盘，有同心圆和螺栓孔）
-- "bracket"：支架类（L形或板状，带孔）
+判断要点：
+1. 出现"三视图""投影""表面取点""求另外两面投影"→ 归入 point3/line3/prism3/pyramid3/cylinder3/cone3/sphere3
+2. 出现"截交线""相贯线"→ prismCut/cylCut/coneCut/interCyl
+3. 只有平面图形 + 一堆 R 和 Ø 尺寸（圆弧相切）→ hook 或 arcConn
+4. 出现"轴测图"→ axoIso/axoCab
+5. 标注齐全的零件图 → shaft/flange/bracket
 
-输出格式：
-{
-  "type": "shaft | flange | bracket",
-  "name": "零件名称（中文）",
-  "segments": [{"diameter": 数字, "length": 数字}],
-  "hasChamfer": true/false,
-  "hasKeyway": true/false,
-  "outerDiameter": 数字,
-  "innerDiameter": 数字,
-  "thickness": 数字,
-  "boltCircle": 数字,
-  "boltCount": 数字,
-  "boltDiameter": 数字,
-  "baseLength": 数字,
-  "baseWidth": 数字,
-  "height": 数字,
-  "holeDiameter": 数字,
-  "holeOffset": 数字
-}
-
-规则：
-1. 尺寸数字直接从图上读，单位 mm，不要估
-2. 图上没有的尺寸给一个合理的默认值
-3. 拿不准类型就选最接近的
-4. 只输出 JSON`
-
-    const res = await fetch(`${AppConfig.baseUrl}/chat/completions`, {
+只输出 JSON，不要解释，不要 markdown 代码块：
+{"type":"...","name":"题目名称（中文）","params":{...}}`
+    const res = await fetch(`${AppConfig.baseUrl.replace(/\/$/, '')}/chat/completions`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${AppConfig.apiKey}`
-      },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${AppConfig.apiKey}` },
       body: JSON.stringify({
         model: AppConfig.model,
         messages: [{
           role: 'user',
           content: [
             { type: 'image_url', image_url: { url: base64 } },
-            { type: 'text', text: prompt }
-          ]
+            { type: 'text', text: prompt },
+          ],
         }],
-        max_tokens: 1000
-      })
+        max_tokens: 800,
+      }),
     })
-    if (!res.ok) {
-      const err = await res.text()
-      throw new Error(`API 错误 ${res.status}: ${err}`)
-    }
+    if (!res.ok) throw new Error(`API 错误 ${res.status}: ${await res.text()}`)
     const data = await res.json()
-    let content = data.choices[0].message.content.trim()
-    content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '')
-    try { return JSON.parse(content) }
-    catch { throw new Error('AI 返回格式错误，请重试') }
+    let content = (data.choices?.[0]?.message?.content || '').trim()
+    content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+    const m = content.match(/\{[\s\S]*\}/)
+    if (!m) throw new Error('AI 返回格式错误，请重试')
+    return JSON.parse(m[0])
   }
+
   _fileToBase64(file) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader()
@@ -814,70 +2334,158 @@ class LLMRecognizer {
 }
 
   // ===== js/app.js =====
+/* App — 界面与调度 */
+const CATS = [
+  ['point', '点 · 线 · 面投影'],
+  ['solid', '基本体三视图'],
+  ['cut', '截交 · 相贯'],
+  ['combo', '组合体'],
+  ['axo', '轴测图'],
+  ['draw', '几何作图'],
+  ['part', '零件图'],
+]
+
+const VARIANTS = {
+  prism3: [
+    { label: '三棱柱', params: { sides: 3 } },
+    { label: '四棱柱', params: { sides: 4 } },
+    { label: '五棱柱', params: { sides: 5 } },
+    { label: '六棱柱', params: { sides: 6 } },
+  ],
+  pyramid3: [
+    { label: '三棱锥', params: { sides: 3 } },
+    { label: '四棱锥', params: { sides: 4 } },
+    { label: '五棱锥', params: { sides: 5 } },
+  ],
+  line3: [
+    { label: '一般位置直线', params: { kind: 'general' } },
+    { label: '水平线', params: { kind: 'horizontal' } },
+  ],
+  coneCut: [
+    { label: '椭圆', params: { kind: 'ellipse' } },
+    { label: '抛物线', params: { kind: 'parabola' } },
+    { label: '双曲线', params: { kind: 'hyperbola' } },
+    { label: '圆', params: { kind: 'circle' } },
+    { label: '三角形', params: { kind: 'triangle' } },
+  ],
+  prismCut: [
+    { label: '30°', params: { angle: 30 } },
+    { label: '45°', params: { angle: 45 } },
+    { label: '60°', params: { angle: 60 } },
+  ],
+  cylCut: [
+    { label: '25°', params: { angle: 25 } },
+    { label: '35°', params: { angle: 35 } },
+    { label: '50°', params: { angle: 50 } },
+  ],
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-  const engine = new DrawEngine('canvas')
-  const player = new Player(engine)
-  const recognizer = new LLMRecognizer()
+  const ALL = Object.assign({}, Templates.T, Templates2D.T)
+  const canvas = document.getElementById('canvas')
+  const engine = new DrawEngine(canvas)
+  const ui = {
+    btnPrev: document.getElementById('btn-prev'),
+    btnPlay: document.getElementById('btn-play'),
+    btnNext: document.getElementById('btn-next'),
+    speedSelect: document.getElementById('speed-select'),
+    stepCurrent: document.getElementById('step-current'),
+    stepTotal: document.getElementById('step-total'),
+    stepList: document.getElementById('step-list'),
+    stepDesc: document.getElementById('step-desc'),
+    stepTitle: document.getElementById('step-title'),
+    partName: document.getElementById('current-part-name'),
+  }
+  const player = new Player(engine, ui)
+  const variantBar = document.getElementById('variant-bar')
+  let currentId = null, currentParams = {}
 
+  // ---------- 题库列表 ----------
+  const listBox = document.getElementById('template-list')
+  CATS.forEach(([cat, name]) => {
+    const items = Object.values(ALL).filter(t => t.cat === cat)
+    if (!items.length) return
+    const g = document.createElement('div')
+    g.className = 'cat'
+    const h = document.createElement('div')
+    h.className = 'cat-h'
+    h.textContent = name
+    g.appendChild(h)
+    items.forEach(t => {
+      const b = document.createElement('button')
+      b.className = 'template-item'
+      b.textContent = t.name
+      b.dataset.id = t.id
+      b.onclick = () => load(t.id)
+      g.appendChild(b)
+    })
+    listBox.appendChild(g)
+  })
+
+  function load(id, params) {
+    const t = ALL[id]
+    if (!t) return
+    currentId = id
+    const base = (VARIANTS[id] && VARIANTS[id][0].params) || {}
+    currentParams = Object.assign({}, base, params || {})
+    let d
+    try {
+      d = t.build(currentParams)
+    } catch (err) {
+      console.error(err)
+      alert('生成失败：' + err.message)
+      return
+    }
+    player.load(d)
+    document.querySelectorAll('.template-item').forEach(b => b.classList.toggle('active', b.dataset.id === id))
+    renderVariants(id)
+    ui.partName.textContent = d.title
+  }
+
+  function renderVariants(id) {
+    const vs = VARIANTS[id]
+    variantBar.innerHTML = ''
+    if (!vs) { variantBar.classList.add('hidden'); return }
+    variantBar.classList.remove('hidden')
+    vs.forEach(v => {
+      const b = document.createElement('button')
+      b.className = 'chip'
+      b.textContent = v.label
+      const same = Object.keys(v.params).every(k => currentParams[k] === v.params[k])
+      if (same) b.classList.add('on')
+      b.onclick = () => { currentParams = Object.assign({}, currentParams, v.params); load(id, currentParams) }
+      variantBar.appendChild(b)
+    })
+  }
+
+  // ---------- 交互 ----------
   const fileInput = document.getElementById('file-input')
-  const btnUpload = document.getElementById('btn-upload')
   const overlay = document.getElementById('overlay-loading')
-  const currentPartName = document.getElementById('current-part-name')
-  const currentPartParams = document.getElementById('current-part-params')
   const settingsModal = document.getElementById('settings-modal')
-
-  btnUpload.onclick = () => fileInput.click()
-  fileInput.onchange = async (e) => {
+  document.getElementById('btn-upload').onclick = () => fileInput.click()
+  fileInput.onchange = async e => {
     const file = e.target.files[0]
     if (!file) return
     if (!AppConfig.hasApiKey) {
-      alert('请先点右上角 ⚙ API 设置，填入你的 API Key')
+      alert('请先点右上角 ⚙ 设置，填入 API Key')
       openSettings()
       return
     }
     overlay.classList.remove('hidden')
     try {
-      const result = await recognizer.recognize(file)
-      loadPart(result)
+      const r = await new LLMRecognizer().recognize(file)
+      if (!ALL[r.type]) throw new Error(`AI 判断的题型 "${r.type}" 不在题库中，请换一张更清晰的图`)
+      load(r.type, r.params)
+      const chip = document.createElement('div')
+      chip.className = 'ai-note'
+      chip.textContent = `AI 识别：${r.name || r.type}`
+      variantBar.prepend(chip)
     } catch (err) {
       alert('识别失败：' + err.message)
     } finally {
       overlay.classList.add('hidden')
+      fileInput.value = ''
     }
-  }
-
-  document.querySelectorAll('.template-item').forEach(btn => {
-    btn.onclick = () => {
-      document.querySelectorAll('.template-item').forEach(b => b.classList.remove('active'))
-      btn.classList.add('active')
-      const type = btn.dataset.template
-      const defaults = {
-        shaft: {
-          type: 'shaft', name: '三台阶轴',
-          segments: [{diameter:20,length:60},{diameter:30,length:80},{diameter:25,length:50}],
-          hasChamfer: true, hasKeyway: true
-        },
-        flange: {
-          type: 'flange', name: '法兰盘',
-          outerDiameter: 80, innerDiameter: 40, thickness: 15,
-          boltCircle: 60, boltCount: 4, boltDiameter: 8
-        },
-        bracket: {
-          type: 'bracket', name: 'L形支架',
-          baseLength: 60, baseWidth: 12, height: 50,
-          holeDiameter: 10, holeOffset: 20
-        }
-      }
-      loadPart(defaults[type])
-    }
-  })
-
-  function loadPart(result) {
-    const steps = Templates.generate(result.type, result)
-    if (steps.length === 0) { alert('不支持的零件类型'); return }
-    player.loadSteps(steps)
-    currentPartName.textContent = result.name || result.type
-    currentPartParams.textContent = JSON.stringify(result, null, 2)
   }
 
   function openSettings() {
@@ -893,16 +2501,20 @@ document.addEventListener('DOMContentLoaded', () => {
     AppConfig.save({
       baseUrl: document.getElementById('cfg-baseurl').value,
       apiKey: document.getElementById('cfg-apikey').value,
-      model: document.getElementById('cfg-model').value
+      model: document.getElementById('cfg-model').value,
     })
     settingsModal.classList.add('hidden')
   }
 
-  loadPart({
-    type: 'shaft', name: '示例：三台阶轴',
-    segments: [{diameter:20,length:60},{diameter:30,length:80},{diameter:25,length:50}],
-    hasChamfer: true, hasKeyway: true
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return
+    if (e.key === 'ArrowRight') player.next()
+    if (e.key === 'ArrowLeft') player.prev()
+    if (e.key === ' ') { e.preventDefault(); player.toggle() }
   })
+
+  // 默认载入：五棱柱（对应最常见的棱柱取点题）
+  load('prism3', { sides: 5 })
 })
   </script>
 

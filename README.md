@@ -1,126 +1,106 @@
 # 机械制图过程演示
 
-拍一张机械零件图，AI 自动生成逐步绘制动画——每一步怎么画、为什么这么画，边看边学。
+拍一张题目照片，AI 判断题型、读尺寸，自动生成一步步的作图动画——每一步怎么画、为什么这么画，边看边学。
 
-## 这是什么
+覆盖《机械制图 / 画法几何》大一、大二的主要题型：点线面投影、基本体三视图与表面取点、截交与相贯、组合体、轴测图、几何作图（圆弧连接 / 吊钩），以及零件图。
 
-一个纯前端网页工具，帮大学生理解机械制图的绘制过程：
+## 能画什么
 
-- 上传零件照片 → AI 识别尺寸参数 → 自动生成绘制步骤动画
-- 每一步配有讲解文字
-- 支持播放/暂停/上一步/下一步/速度调节
-- 也可以手动选模板（轴类、法兰盘、支架）直接看演示
+| 类别 | 题型 |
+|---|---|
+| 点 · 线 · 面 | 点的三面投影、直线的三面投影（一般位置 / 水平线）、平面的三面投影（正垂面） |
+| 基本体 | 棱柱（3~6 棱）、棱锥、圆柱、圆锥、圆球的三视图 + 表面取点（辅助素线法 / 辅助纬圆法） |
+| 截交 · 相贯 | 四棱柱被正垂面截切、圆柱斜切得椭圆、圆锥截交五种情形（椭圆/抛物线/双曲线/圆/三角形）、两圆柱正交相贯 |
+| 组合体 | 叠加式（底板+立板+凸台）、切割式（U 形槽块） |
+| 轴测图 | 正等轴测图、斜二轴测图 |
+| 几何作图 | 圆弧连接四种基本形式、吊钩平面图形（R40/R34/R32/R20/R4 + Ø16/Ø20/C3/85/13/16） |
+| 零件图 | 阶梯轴、法兰盘、L 形支架 |
 
 ## 技术原理
 
 ```
-用户拍零件图
+题目照片
+    ↓  多模态 LLM：判断题型 + 读尺寸
+参数化几何引擎
+    ├─ 2D 图纸模型（mm，线型/尺寸标注/点标记）
+    └─ 3D 网格 + 隐藏线消除（HLR）→ 三视图 / 轴测图
     ↓
-多模态 LLM 读图 → 输出 JSON（零件类型 + 尺寸参数）
-    ↓
-参数化模板引擎 → 根据尺寸自动计算坐标，生成绘制步骤
-    ↓
-Canvas 动画 → 逐步播放，带讲解
+Canvas 逐步绘制动画（重播、单步、调速）
 ```
 
-**坐标由引擎算，不是 LLM 画的**——所以比例准确，不会歪。
-LLM 只负责读尺寸数字（Ø20、R30、长度50），这是它擅长的事。
+- **三视图是按"长对正、高平齐、宽相等"算出来的**，不是手写死的坐标：3D 网格投影 + 相邻面朝向判可见性 + 射线遮挡测试，自动区分粗实线与虚线，并画出 45° 辅助线。
+- **表面取点**的可见性也是算出来的：若某点在该视图被遮挡，自动加括号。
+- **几何作图**用相切条件解圆心：外切 r+R、内切 |R−r|，交点即连接弧圆心。
 
 ## 使用方法
 
 ### 1. 打开网页
 
-直接用浏览器打开 `index.html` 即可，不需要服务器。
+- 拆分版：浏览器打开 `index.html`（需要同目录下的 `css/`、`js/`）
+- 单文件版：直接打开 `index-standalone.html`，CSS/JS 全部内联，一个文件即可
 
-> 也可以直接用 `index-standalone.html`——单文件合并版，CSS 和 JS 全部内联在一个文件里，无需其他任何文件，适合发给别人或快速部署。
-
-> 注意：调用 AI 接口需要联网。如果浏览器报 CORS 错误，可以用本地服务器打开：
-> ```bash
-> # 在项目目录下
-> python3 -m http.server 8080
-> # 浏览器打开 http://localhost:8080
-> ```
+> 调用 AI 接口需要联网；若浏览器报 CORS，可在目录下 `python3 -m http.server 8080`，再访问 `http://localhost:8080`。
 
 ### 2. 配置 API
 
-点右上角 **⚙ API 设置**，填入：
+点右上角 **⚙ API 设置**：
 
 | 字段 | 说明 | 默认值 |
 |---|---|---|
 | API Base URL | OpenAI 兼容接口地址 | `https://api.openai.com/v1` |
-| API Key | 你的密钥 | （必填） |
-| 模型名称 | 多模态模型 | `gpt-4o` |
+| API Key | 你的密钥 | 必填 |
+| 模型名称 | 需支持图片输入的多模态模型 | `gpt-4o` |
 
-支持任何 OpenAI 兼容的多模态接口（OpenAI、Azure、本地部署的 vLLM 等）。
-API Key 只存在浏览器 localStorage 里，不会上传到任何服务器。
+API Key 只存在浏览器 localStorage，不会上传。也可以不配 API，直接点左侧题型库看演示。
 
-### 3. 使用
+### 3. 操作
 
-- **上传图片**：点"📷 拍照/上传图片"，选一张机械制图照片
-- **手动模板**：左侧选一个零件类型，直接看动画
-- **播放控制**：底部控制条播放/暂停/上一步/下一步/调速
+- 左侧按类别选择题型；画布左上角的胶囊按钮可切换参数（棱柱边数、截平面角度、圆锥截交类型等）
+- 右侧是作图步骤，点任意一步可跳转
+- 底部：上一步 / 播放 / 下一步 / 速度；键盘 ← → 切换，空格播放
 
 ## 项目结构
 
 ```
 mech-drawing-animator/
-├── index.html            # 主页面（拆分版，引用 css/ 和 js/）
-├── index-standalone.html # 单文件合并版（CSS/JS 全内联，双击即用）
-├── css/
-│   └── style.css       # 样式
+├── index.html            # 主页面（拆分版）
+├── index-standalone.html # 单文件合并版
+├── css/style.css
 ├── js/
-│   ├── config.js       # API 配置（localStorage）
-│   ├── templates.js    # 参数化零件模板（核心）
-│   ├── engine.js       # Canvas 绘制引擎
-│   ├── player.js       # 动画播放器
-│   ├── llm.js          # 多模态 LLM 识图
-│   └── app.js          # 主逻辑
+│   ├── config.js         # API 配置（localStorage）
+│   ├── paper.js          # 2D 图纸模型：线型、尺寸标注、点标记
+│   ├── geom3d.js         # 3D 网格、投影、隐藏线消除、截切
+│   ├── views.js          # 三视图调度：视图布局、45°线、取点投影
+│   ├── templates.js      # 画法几何 / 三视图题库
+│   ├── templates2d.js    # 几何作图 / 零件图题库
+│   ├── engine.js         # Canvas 渲染器（自适应缩放 + 逐步动画）
+│   ├── player.js         # 步骤播放器
+│   ├── llm.js            # 多模态识图 → 题型 + 参数
+│   └── app.js            # 界面与调度
 └── README.md
 ```
 
-## 支持的零件类型
+## 加新题型
 
-| 类型 | 模板函数 | 参数 |
-|---|---|---|
-| 轴类（shaft） | `Templates.shaft()` | segments(直径+长度)、倒角、键槽 |
-| 法兰盘（flange） | `Templates.flange()` | 外径、内径、螺栓孔分布圆、孔数 |
-| 支架（bracket） | `Templates.bracket()` | 底板长宽高、孔径、孔位置 |
-
-## 怎么加新零件模板
-
-在 `js/templates.js` 里加一个函数：
+在 `js/templates.js`（或 `templates2d.js`）里注册一个模板：
 
 ```javascript
-myNewTemplate(params) {
-  const steps = []
-  // Step 1
-  steps.push({
-    desc: '这一步画什么',
-    elements: [{ type: 'line', x1: 100, y1: 200, x2: 300, y2: 200 }]
-  })
-  // ...
-  return steps
-}
+def('myType', 'solid', '题型名称', (prm = {}) => {
+  const m = GEO.prism({ n: 6, R: 30, h: 50 })     // 3D 实体
+  const S = Views.scene([m], { gap: 14 })          // 三视图 + 隐藏线
+  return {
+    title: '题型名称',
+    steps: [
+      { title: '1. 画中心线', desc: '……', els: S.centerLines({ cx: 0, cy: 0 }) },
+      { title: '2. 画俯视图', desc: '……', els: S.outline('top') },
+      { title: '3. 画主视图', desc: '……', els: S.outline('front') },
+      { title: '4. 画左视图', desc: '……', els: [...S.line45(), ...S.outline('left')] },
+    ],
+  }
+})
 ```
 
-然后在 `generate()` 分发器里注册：
-
-```javascript
-generate(type, params) {
-  if (type === 'shaft') return this.shaft(params)
-  if (type === 'flange') return this.flange(params)
-  if (type === 'mynew') return this.myNewTemplate(params)  // 加这行
-}
-```
-
-支持的 element 类型：`line`、`rect`、`circle`、`arc`、`centerline`、`dim`。
-
-## 开发说明
-
-- 纯原生 JS，无框架、无构建工具
-- 零后端，所有逻辑在浏览器跑
-- LLM API 调用是直连的（生产环境建议加代理）
-- 可以用 Codex / Cursor 等 AI agent 继续扩展功能
+然后把它加进 `js/llm.js` 的题库说明里，AI 就能识别这张图。
 
 ## License
 
