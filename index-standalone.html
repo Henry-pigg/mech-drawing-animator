@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>机械制图过程演示</title>
+  <style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: #f5f5f5;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+header {
+  background: #2c3e50;
+  color: #fff;
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+header h1 { font-size: 18px; font-weight: 600; }
+
+main {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 240px;
+  background: #fff;
+  border-right: 1px solid #e0e0e0;
+  padding: 16px;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+.sidebar.right {
+  border-right: none;
+  border-left: 1px solid #e0e0e0;
+}
+
+.panel { margin-bottom: 20px; }
+.panel h3 {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.canvas-area {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fafafa;
+  position: relative;
+  padding: 20px;
+}
+#canvas {
+  background: #fff;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.btn-primary {
+  background: #3498db;
+  color: #fff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  width: 100%;
+  transition: background 0.2s;
+}
+.btn-primary:hover { background: #2980b9; }
+
+.btn-secondary {
+  background: transparent;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.4);
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.btn-secondary:hover { background: rgba(255,255,255,0.1); }
+
+.btn-control {
+  background: #fff;
+  border: 1px solid #ddd;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+.btn-control:hover:not(:disabled) { background: #f0f0f0; }
+.btn-control:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-control.btn-primary {
+  background: #3498db;
+  color: #fff;
+  border-color: #3498db;
+  min-width: 80px;
+}
+
+.template-list { display: flex; flex-direction: column; gap: 8px; }
+.template-item {
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  padding: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+.template-item:hover { background: #e3f2fd; border-color: #3498db; }
+.template-item.active { background: #3498db; color: #fff; border-color: #3498db; }
+
+.hint { font-size: 12px; color: #999; margin-top: 8px; line-height: 1.5; }
+
+.step-list { max-height: 300px; overflow-y: auto; }
+.step-item {
+  padding: 8px 10px;
+  border-radius: 4px;
+  margin-bottom: 4px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.step-item:hover { background: #f0f0f0; }
+.step-item.done { color: #27ae60; }
+.step-item.current { background: #e3f2fd; color: #2980b9; font-weight: 600; }
+
+.step-desc {
+  background: #f8f9fa;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 60px;
+}
+
+footer {
+  background: #fff;
+  border-top: 1px solid #e0e0e0;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.speed-control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 12px;
+  font-size: 13px;
+}
+.speed-control select {
+  padding: 4px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+.step-progress { margin-left: auto; font-size: 14px; color: #666; }
+
+.modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+.modal.hidden { display: none; }
+.modal-content {
+  background: #fff;
+  padding: 24px;
+  border-radius: 12px;
+  width: 400px;
+  max-width: 90%;
+}
+.modal-content h2 { margin-bottom: 16px; font-size: 18px; }
+.modal-content label {
+  display: block;
+  font-size: 13px;
+  color: #666;
+  margin: 12px 0 4px;
+}
+.modal-content input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+}
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  justify-content: flex-end;
+}
+.modal-actions .btn-secondary { background: #f0f0f0; color: #333; border: none; }
+
+.overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(255,255,255,0.9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+.overlay.hidden { display: none; }
+.spinner {
+  width: 40px; height: 40px;
+  border: 4px solid #e0e0e0;
+  border-top-color: #3498db;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.params-display {
+  font-size: 13px;
+  color: #555;
+  line-height: 1.8;
+  font-family: monospace;
+  background: #f8f9fa;
+  padding: 8px;
+  border-radius: 4px;
+}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>机械制图过程演示</h1>
+    <button id="btn-settings" class="btn-secondary">⚙ API 设置</button>
+  </header>
+
+  <main>
+    <aside class="sidebar">
+      <div class="panel">
+        <h3>1. 上传零件图</h3>
+        <input type="file" id="file-input" accept="image/*" hidden>
+        <button id="btn-upload" class="btn-primary">📷 拍照 / 上传图片</button>
+        <p class="hint">支持轴类、法兰盘、支架等简单零件</p>
+      </div>
+
+      <div class="panel">
+        <h3>2. 或手动选择模板</h3>
+        <div id="template-list" class="template-list">
+          <button class="template-item" data-template="shaft">阶梯轴</button>
+          <button class="template-item" data-template="flange">法兰盘</button>
+          <button class="template-item" data-template="bracket">支架</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>当前零件</h3>
+        <div id="current-part-name">未选择</div>
+        <div id="current-part-params" class="params-display"></div>
+      </div>
+    </aside>
+
+    <section class="canvas-area">
+      <canvas id="canvas" width="900" height="550"></canvas>
+      <div id="overlay-loading" class="overlay hidden">
+        <div class="spinner"></div>
+        <p>AI 正在识图中...</p>
+      </div>
+    </section>
+
+    <aside class="sidebar right">
+      <div class="panel">
+        <h3>绘制步骤</h3>
+        <div id="step-list" class="step-list">
+          <p class="hint">上传图片或选择模板后开始</p>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>当前讲解</h3>
+        <div id="step-desc" class="step-desc">—</div>
+      </div>
+    </aside>
+  </main>
+
+  <footer>
+    <button id="btn-prev" class="btn-control" disabled>⏮ 上一步</button>
+    <button id="btn-play" class="btn-control btn-primary" disabled>▶ 播放</button>
+    <button id="btn-next" class="btn-control" disabled>下一步 ⏭</button>
+    <div class="speed-control">
+      <label>速度：</label>
+      <select id="speed-select">
+        <option value="0.5">0.5x</option>
+        <option value="1" selected>1x</option>
+        <option value="2">2x</option>
+        <option value="4">4x</option>
+      </select>
+    </div>
+    <div class="step-progress">
+      <span id="step-current">0</span> / <span id="step-total">0</span>
+    </div>
+  </footer>
+
+  <div id="settings-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>API 设置</h2>
+      <p class="hint">你的 API Key 只存在浏览器本地，不会上传。</p>
+      <label>API Base URL</label>
+      <input type="text" id="cfg-baseurl" placeholder="https://api.openai.com/v1" value="https://api.openai.com/v1">
+      <label>API Key</label>
+      <input type="password" id="cfg-apikey" placeholder="sk-...">
+      <label>模型名称</label>
+      <input type="text" id="cfg-model" placeholder="gpt-4o" value="gpt-4o">
+      <div class="modal-actions">
+        <button id="btn-cancel-settings" class="btn-secondary">取消</button>
+        <button id="btn-save-settings" class="btn-primary">保存</button>
+      </div>
+    </div>
+  </div>
+  <script>
+  // ===== js/config.js =====
+const AppConfig = {
+  KEY: 'mech_draw_config',
+  get() {
+    try { return JSON.parse(localStorage.getItem(this.KEY)) || {} }
+    catch { return {} }
+  },
+  save(cfg) { localStorage.setItem(this.KEY, JSON.stringify(cfg)) },
+  get baseUrl() { return this.get().baseUrl || 'https://api.openai.com/v1' },
+  get apiKey() { return this.get().apiKey || '' },
+  get model() { return this.get().model || 'gpt-4o' },
+  get hasApiKey() { return !!this.apiKey }
+}
+
+  // ===== js/templates.js =====
+const Templates = {
+  shaft(params) {
+    const segs = params.segments || [{diameter:20,length:60},{diameter:30,length:80},{diameter:25,length:50}]
+    const totalLen = segs.reduce((s, x) => s + x.length, 0)
+    const startX = (900 - totalLen * 3) / 2
+    const centerY = 280
+    const scale = 3
+    const steps = []
+
+    steps.push({
+      desc: '第一步：画水平中心线作为基准。用细点划线，超出轮廓两端各 5~10mm。',
+      elements: [{ type: 'centerline', x1: startX - 20, y1: centerY, x2: startX + totalLen * scale + 20, y2: centerY }]
+    })
+
+    let x = startX
+    segs.forEach((seg, i) => {
+      const w = seg.length * scale
+      const h = seg.diameter * scale
+      steps.push({
+        desc: `第${i+2}步：画第 ${i+1} 段轴，直径 Ø${seg.diameter}，长度 ${seg.length}。粗实线，从中心线上下对称画出。`,
+        elements: [{ type: 'rect', x: x, y: centerY - h/2, w: w, h: h }]
+      })
+      x += w
+    })
+
+    if (params.hasChamfer) {
+      const c = 2
+      steps.push({
+        desc: `第${steps.length+1}步：画倒角 C${c}。在轴端 45° 切角。`,
+        elements: [
+          { type: 'line', x1: startX, y1: centerY - segs[0].diameter*scale/2, x2: startX + c*scale, y2: centerY - segs[0].diameter*scale/2 + c*scale },
+          { type: 'line', x1: startX, y1: centerY + segs[0].diameter*scale/2, x2: startX + c*scale, y2: centerY + segs[0].diameter*scale/2 - c*scale }
+        ]
+      })
+    }
+
+    if (params.hasKeyway) {
+      const keySeg = segs[1] || segs[0]
+      const keyX = startX + (segs[0]?.length || 0) * scale + 20
+      steps.push({
+        desc: `第${steps.length+1}步：画键槽。宽 6mm，深 3mm，位于轴段上方。`,
+        elements: [{ type: 'rect', x: keyX, y: centerY - keySeg.diameter*scale/2 - 10, w: 40, h: 10 }]
+      })
+    }
+
+    let dimX = startX
+    segs.forEach((seg, i) => {
+      const w = seg.length * scale
+      steps.push({
+        desc: `第${steps.length+1}步：标注第 ${i+1} 段的直径 Ø${seg.diameter} 和长度 ${seg.length}。`,
+        elements: [
+          { type: 'dim', x1: dimX, y1: centerY - seg.diameter*scale/2 - 25, x2: dimX + w, y2: centerY - seg.diameter*scale/2 - 25, text: String(seg.length) },
+          { type: 'dim', x1: dimX + w/2, y1: centerY - seg.diameter*scale/2 - 45, x2: dimX + w/2, y2: centerY - seg.diameter*scale/2, text: `Ø${seg.diameter}` }
+        ]
+      })
+      dimX += w
+    })
+    return steps
+  },
+
+  flange(params) {
+    const od = params.outerDiameter || 80
+    const id = params.innerDiameter || 40
+    const bc = params.boltCircle || 60
+    const n = params.boltCount || 4
+    const bd = params.boltDiameter || 8
+    const cx = 450, cy = 280, scale = 3
+    const steps = []
+
+    steps.push({
+      desc: '第一步：画十字中心线。水平和垂直点划线交点为圆心。',
+      elements: [
+        { type: 'centerline', x1: cx - od*scale, y1: cy, x2: cx + od*scale, y2: cy },
+        { type: 'centerline', x1: cx, y1: cy - od*scale, x2: cx, y2: cy + od*scale }
+      ]
+    })
+    steps.push({
+      desc: `第二步：画法兰外圆 Ø${od}。粗实线圆。`,
+      elements: [{ type: 'circle', cx, cy, r: od*scale/2 }]
+    })
+    steps.push({
+      desc: `第三步：画内孔 Ø${id}。与外圆同心。`,
+      elements: [{ type: 'circle', cx, cy, r: id*scale/2 }]
+    })
+    steps.push({
+      desc: `第四步：画螺栓孔中心圆（点划线），Ø${bc}。`,
+      elements: [{ type: 'circle', cx, cy, r: bc*scale/2, dashed: true }]
+    })
+    const angles = []
+    for (let i = 0; i < n; i++) angles.push((i * 2 * Math.PI) / n - Math.PI/2)
+    steps.push({
+      desc: `第五步：在螺栓孔中心圆上均匀分布 ${n} 个螺栓孔 Ø${bd}。`,
+      elements: angles.map(a => ({
+        type: 'circle',
+        cx: cx + (bc*scale/2) * Math.cos(a),
+        cy: cy + (bc*scale/2) * Math.sin(a),
+        r: bd*scale/2
+      }))
+    })
+    steps.push({
+      desc: '第六步：标注各尺寸——外径、内径、螺栓孔分布圆和螺栓孔直径。',
+      elements: [
+        { type: 'dim', x1: cx - od*scale/2, y1: cy - od*scale/2 - 30, x2: cx + od*scale/2, y2: cy - od*scale/2 - 30, text: `Ø${od}` },
+        { type: 'dim', x1: cx - id*scale/2, y1: cy + id*scale/2 + 20, x2: cx + id*scale/2, y2: cy + id*scale/2 + 20, text: `Ø${id}` }
+      ]
+    })
+    return steps
+  },
+
+  bracket(params) {
+    const bl = params.baseLength || 60
+    const bw = params.baseWidth || 12
+    const h = params.height || 50
+    const hd = params.holeDiameter || 10
+    const ho = params.holeOffset || 20
+    const ox = 250, oy = 350, scale = 3
+    const steps = []
+
+    steps.push({
+      desc: '第一步：画底面基准线和左侧竖直线作为定位。',
+      elements: [
+        { type: 'line', x1: ox - 20, y1: oy, x2: ox + bl*scale + 20, y2: oy },
+        { type: 'line', x1: ox, y1: oy + 20, x2: ox, y2: oy - h*scale - 20 }
+      ]
+    })
+    steps.push({
+      desc: `第二步：画底板轮廓，长 ${bl}mm，厚 ${bw}mm。`,
+      elements: [{ type: 'rect', x: ox, y: oy - bw*scale, w: bl*scale, h: bw*scale }]
+    })
+    steps.push({
+      desc: `第三步：画竖板轮廓，高 ${h}mm，与底板左侧对齐。`,
+      elements: [{ type: 'rect', x: ox, y: oy - h*scale - bw*scale, w: bw*scale, h: h*scale }]
+    })
+    steps.push({
+      desc: `第四步：画竖板上的安装孔 Ø${hd}，距底面 ${ho}mm。`,
+      elements: [
+        { type: 'centerline', x1: ox + bw*scale/2 - 15, y1: oy - bw*scale - ho*scale, x2: ox + bw*scale/2 + 15, y2: oy - bw*scale - ho*scale },
+        { type: 'centerline', x1: ox + bw*scale/2, y1: oy - bw*scale - ho*scale - 15, x2: ox + bw*scale/2, y2: oy - bw*scale - ho*scale + 15 },
+        { type: 'circle', cx: ox + bw*scale/2, cy: oy - bw*scale - ho*scale, r: hd*scale/2 }
+      ]
+    })
+    steps.push({
+      desc: '第五步：标注底板长度、高度和孔的尺寸。',
+      elements: [
+        { type: 'dim', x1: ox, y1: oy + 20, x2: ox + bl*scale, y2: oy + 20, text: String(bl) },
+        { type: 'dim', x1: ox - 30, y1: oy - bw*scale, x2: ox - 30, y2: oy - h*scale - bw*scale, text: String(h) }
+      ]
+    })
+    return steps
+  },
+
+  generate(type, params) {
+    if (type === 'shaft') return this.shaft(params)
+    if (type === 'flange') return this.flange(params)
+    if (type === 'bracket') return this.bracket(params)
+    return []
+  }
+}
+
+  // ===== js/engine.js =====
+class DrawEngine {
+  constructor(canvasId) {
+    this.canvas = document.getElementById(canvasId)
+    this.ctx = this.canvas.getContext('2d')
+    this.clear()
+  }
+  clear() {
+    this.ctx.fillStyle = '#fff'
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
+  }
+  drawElement(el, progress = 1) {
+    const ctx = this.ctx
+    ctx.save()
+    switch (el.type) {
+      case 'centerline':
+        this._drawLine(el.x1, el.y1, el.x2, el.y2, progress, '#333', 0.8, [12,4,2,4])
+        break
+      case 'line':
+        this._drawLine(el.x1, el.y1, el.x2, el.y2, progress, '#000', 2)
+        break
+      case 'rect':
+        this._drawRect(el.x, el.y, el.w, el.h, progress)
+        break
+      case 'circle':
+        this._drawCircle(el.cx, el.cy, el.r, progress, el.dashed)
+        break
+      case 'arc':
+        this._drawArc(el.cx, el.cy, el.r, el.startAngle, el.endAngle, progress)
+        break
+      case 'dim':
+        this._drawDim(el, progress)
+        break
+    }
+    ctx.restore()
+  }
+  _drawLine(x1, y1, x2, y2, progress, color, width, dash = []) {
+    const ctx = this.ctx
+    ctx.strokeStyle = color
+    ctx.lineWidth = width
+    ctx.setLineDash(dash)
+    ctx.beginPath()
+    ctx.moveTo(x1, y1)
+    ctx.lineTo(x1 + (x2-x1)*progress, y1 + (y2-y1)*progress)
+    ctx.stroke()
+  }
+  _drawRect(x, y, w, h, progress) {
+    const ctx = this.ctx
+    ctx.strokeStyle = '#000'
+    ctx.lineWidth = 2.5
+    ctx.setLineDash([])
+    ctx.beginPath()
+    const dist = 2*(w+h) * progress
+    ctx.moveTo(x, y)
+    if (dist > 0) {
+      const d1 = Math.min(dist, w)
+      ctx.lineTo(x+d1, y)
+      if (dist > w) {
+        const d2 = Math.min(dist-w, h)
+        ctx.lineTo(x+w, y+d2)
+        if (dist > w+h) {
+          const d3 = Math.min(dist-w-h, w)
+          ctx.lineTo(x+w-d3, y+h)
+          if (dist > w+h+w) {
+            ctx.lineTo(x, y+h-(dist-w-h-w))
+          }
+        }
+      }
+    }
+    ctx.stroke()
+  }
+  _drawCircle(cx, cy, r, progress, dashed = false) {
+    const ctx = this.ctx
+    ctx.strokeStyle = '#000'
+    ctx.lineWidth = dashed ? 0.8 : 2
+    ctx.setLineDash(dashed ? [12,4,2,4] : [])
+    ctx.beginPath()
+    ctx.arc(cx, cy, r, -Math.PI/2, -Math.PI/2 + Math.PI*2*progress)
+    ctx.stroke()
+  }
+  _drawArc(cx, cy, r, startAngle, endAngle, progress) {
+    const ctx = this.ctx
+    ctx.strokeStyle = '#000'
+    ctx.lineWidth = 2
+    ctx.beginPath()
+    ctx.arc(cx, cy, r, startAngle, startAngle + (endAngle-startAngle)*progress)
+    ctx.stroke()
+  }
+  _drawDim(el, progress) {
+    const ctx = this.ctx
+    ctx.strokeStyle = '#333'
+    ctx.lineWidth = 0.5
+    ctx.beginPath()
+    ctx.moveTo(el.x1, el.y1)
+    ctx.lineTo(el.x1 + (el.x2-el.x1)*progress, el.y1 + (el.y2-el.y1)*progress)
+    ctx.stroke()
+    if (el.text && progress > 0.5) {
+      ctx.fillStyle = '#000'
+      ctx.font = '12px sans-serif'
+      ctx.textAlign = 'center'
+      ctx.fillText(el.text, (el.x1+el.x2)/2, el.y1 - 5)
+    }
+  }
+  drawStepComplete(step) {
+    step.elements.forEach(el => this.drawElement(el, 1))
+  }
+}
+
+  // ===== js/player.js =====
+class Player {
+  constructor(engine) {
+    this.engine = engine
+    this.steps = []
+    this.currentStep = -1
+    this.playing = false
+    this.speed = 1
+    this.btnPrev = document.getElementById('btn-prev')
+    this.btnPlay = document.getElementById('btn-play')
+    this.btnNext = document.getElementById('btn-next')
+    this.speedSelect = document.getElementById('speed-select')
+    this.stepCurrent = document.getElementById('step-current')
+    this.stepTotal = document.getElementById('step-total')
+    this.stepList = document.getElementById('step-list')
+    this.stepDesc = document.getElementById('step-desc')
+    this.btnPrev.onclick = () => this.prev()
+    this.btnNext.onclick = () => this.next()
+    this.btnPlay.onclick = () => this.togglePlay()
+    this.speedSelect.onchange = (e) => { this.speed = parseFloat(e.target.value) }
+  }
+  loadSteps(steps) {
+    this.steps = steps
+    this.currentStep = -1
+    this.engine.clear()
+    this._renderStepList()
+    this._updateUI()
+    this.stepTotal.textContent = steps.length
+  }
+  _renderStepList() {
+    this.stepList.innerHTML = ''
+    this.steps.forEach((step, i) => {
+      const div = document.createElement('div')
+      div.className = 'step-item'
+      div.textContent = `${i+1}. ${step.desc.slice(0,30)}...`
+      div.onclick = () => this.jumpTo(i)
+      this.stepList.appendChild(div)
+    })
+  }
+  _highlightStep() {
+    const items = this.stepList.querySelectorAll('.step-item')
+    items.forEach((el, i) => {
+      el.classList.remove('current','done')
+      if (i < this.currentStep) el.classList.add('done')
+      if (i === this.currentStep) el.classList.add('current')
+    })
+  }
+  _updateUI() {
+    this.stepCurrent.textContent = this.currentStep + 1
+    this.btnPrev.disabled = this.currentStep <= 0
+    this.btnNext.disabled = this.currentStep >= this.steps.length - 1
+    this.btnPlay.disabled = this.steps.length === 0
+    if (this.currentStep >= 0 && this.steps[this.currentStep]) {
+      this.stepDesc.textContent = this.steps[this.currentStep].desc
+    }
+    this._highlightStep()
+  }
+  async next() {
+    if (this.currentStep >= this.steps.length - 1) return
+    this.currentStep++
+    this._updateUI()
+    await this._animateStep(this.currentStep)
+    if (this.playing && this.currentStep < this.steps.length - 1) {
+      setTimeout(() => this.next(), 800 / this.speed)
+    } else if (this.currentStep >= this.steps.length - 1) {
+      this.playing = false
+      this.btnPlay.textContent = '▶ 播放'
+    }
+  }
+  prev() {
+    if (this.currentStep <= 0) return
+    this.playing = false
+    this.btnPlay.textContent = '▶ 播放'
+    this.currentStep--
+    this.engine.clear()
+    for (let i = 0; i <= this.currentStep; i++) this.engine.drawStepComplete(this.steps[i])
+    this._updateUI()
+  }
+  jumpTo(i) {
+    this.playing = false
+    this.btnPlay.textContent = '▶ 播放'
+    this.currentStep = i
+    this.engine.clear()
+    for (let j = 0; j <= i; j++) this.engine.drawStepComplete(this.steps[j])
+    this._updateUI()
+  }
+  togglePlay() {
+    if (this.playing) {
+      this.playing = false
+      this.btnPlay.textContent = '▶ 播放'
+    } else {
+      this.playing = true
+      this.btnPlay.textContent = '⏸ 暂停'
+      if (this.currentStep >= this.steps.length - 1) {
+        this.currentStep = -1
+        this.engine.clear()
+      }
+      this.next()
+    }
+  }
+  _animateStep(stepIdx) {
+    return new Promise(resolve => {
+      const step = this.steps[stepIdx]
+      const elements = step.elements
+      let elIdx = 0, progress = 0
+      const animate = () => {
+        if (elIdx >= elements.length) { resolve(); return }
+        progress += 0.08
+        if (progress >= 1) progress = 1
+        this.engine.clear()
+        for (let i = 0; i < stepIdx; i++) this.engine.drawStepComplete(this.steps[i])
+        for (let i = 0; i < elIdx; i++) this.engine.drawElement(elements[i], 1)
+        this.engine.drawElement(elements[elIdx], progress)
+        if (progress >= 1) { elIdx++; progress = 0 }
+        requestAnimationFrame(animate)
+      }
+      animate()
+    })
+  }
+}
+
+  // ===== js/llm.js =====
+class LLMRecognizer {
+  async recognize(imageFile) {
+    if (!AppConfig.hasApiKey) throw new Error('请先在右上角设置中填入 API Key')
+    const base64 = await this._fileToBase64(imageFile)
+    const prompt = `你是一个机械制图老师。看这张零件图，读出零件类型和所有尺寸参数。
+
+只输出 JSON，不要解释，不要 markdown 代码块。
+
+零件类型有三种：
+- "shaft"：轴类（回转体，有水平中心线贯穿，多段圆柱）
+- "flange"：法兰盘类（圆盘，有同心圆和螺栓孔）
+- "bracket"：支架类（L形或板状，带孔）
+
+输出格式：
+{
+  "type": "shaft | flange | bracket",
+  "name": "零件名称（中文）",
+  "segments": [{"diameter": 数字, "length": 数字}],
+  "hasChamfer": true/false,
+  "hasKeyway": true/false,
+  "outerDiameter": 数字,
+  "innerDiameter": 数字,
+  "thickness": 数字,
+  "boltCircle": 数字,
+  "boltCount": 数字,
+  "boltDiameter": 数字,
+  "baseLength": 数字,
+  "baseWidth": 数字,
+  "height": 数字,
+  "holeDiameter": 数字,
+  "holeOffset": 数字
+}
+
+规则：
+1. 尺寸数字直接从图上读，单位 mm，不要估
+2. 图上没有的尺寸给一个合理的默认值
+3. 拿不准类型就选最接近的
+4. 只输出 JSON`
+
+    const res = await fetch(`${AppConfig.baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${AppConfig.apiKey}`
+      },
+      body: JSON.stringify({
+        model: AppConfig.model,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image_url', image_url: { url: base64 } },
+            { type: 'text', text: prompt }
+          ]
+        }],
+        max_tokens: 1000
+      })
+    })
+    if (!res.ok) {
+      const err = await res.text()
+      throw new Error(`API 错误 ${res.status}: ${err}`)
+    }
+    const data = await res.json()
+    let content = data.choices[0].message.content.trim()
+    content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '')
+    try { return JSON.parse(content) }
+    catch { throw new Error('AI 返回格式错误，请重试') }
+  }
+  _fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result)
+      reader.onerror = reject
+      reader.readAsDataURL(file)
+    })
+  }
+}
+
+  // ===== js/app.js =====
+document.addEventListener('DOMContentLoaded', () => {
+  const engine = new DrawEngine('canvas')
+  const player = new Player(engine)
+  const recognizer = new LLMRecognizer()
+
+  const fileInput = document.getElementById('file-input')
+  const btnUpload = document.getElementById('btn-upload')
+  const overlay = document.getElementById('overlay-loading')
+  const currentPartName = document.getElementById('current-part-name')
+  const currentPartParams = document.getElementById('current-part-params')
+  const settingsModal = document.getElementById('settings-modal')
+
+  btnUpload.onclick = () => fileInput.click()
+  fileInput.onchange = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    if (!AppConfig.hasApiKey) {
+      alert('请先点右上角 ⚙ API 设置，填入你的 API Key')
+      openSettings()
+      return
+    }
+    overlay.classList.remove('hidden')
+    try {
+      const result = await recognizer.recognize(file)
+      loadPart(result)
+    } catch (err) {
+      alert('识别失败：' + err.message)
+    } finally {
+      overlay.classList.add('hidden')
+    }
+  }
+
+  document.querySelectorAll('.template-item').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('.template-item').forEach(b => b.classList.remove('active'))
+      btn.classList.add('active')
+      const type = btn.dataset.template
+      const defaults = {
+        shaft: {
+          type: 'shaft', name: '三台阶轴',
+          segments: [{diameter:20,length:60},{diameter:30,length:80},{diameter:25,length:50}],
+          hasChamfer: true, hasKeyway: true
+        },
+        flange: {
+          type: 'flange', name: '法兰盘',
+          outerDiameter: 80, innerDiameter: 40, thickness: 15,
+          boltCircle: 60, boltCount: 4, boltDiameter: 8
+        },
+        bracket: {
+          type: 'bracket', name: 'L形支架',
+          baseLength: 60, baseWidth: 12, height: 50,
+          holeDiameter: 10, holeOffset: 20
+        }
+      }
+      loadPart(defaults[type])
+    }
+  })
+
+  function loadPart(result) {
+    const steps = Templates.generate(result.type, result)
+    if (steps.length === 0) { alert('不支持的零件类型'); return }
+    player.loadSteps(steps)
+    currentPartName.textContent = result.name || result.type
+    currentPartParams.textContent = JSON.stringify(result, null, 2)
+  }
+
+  function openSettings() {
+    const cfg = AppConfig.get()
+    document.getElementById('cfg-baseurl').value = cfg.baseUrl || 'https://api.openai.com/v1'
+    document.getElementById('cfg-apikey').value = cfg.apiKey || ''
+    document.getElementById('cfg-model').value = cfg.model || 'gpt-4o'
+    settingsModal.classList.remove('hidden')
+  }
+  document.getElementById('btn-settings').onclick = openSettings
+  document.getElementById('btn-cancel-settings').onclick = () => settingsModal.classList.add('hidden')
+  document.getElementById('btn-save-settings').onclick = () => {
+    AppConfig.save({
+      baseUrl: document.getElementById('cfg-baseurl').value,
+      apiKey: document.getElementById('cfg-apikey').value,
+      model: document.getElementById('cfg-model').value
+    })
+    settingsModal.classList.add('hidden')
+  }
+
+  loadPart({
+    type: 'shaft', name: '示例：三台阶轴',
+    segments: [{diameter:20,length:60},{diameter:30,length:80},{diameter:25,length:50}],
+    hasChamfer: true, hasKeyway: true
+  })
+})
+  </script>
+
+</body>
+</html>
