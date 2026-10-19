@@ -1882,12 +1882,13 @@ const Templates2D = (() => {
       x += s.l
     })
     body.push(Paper.line([x, -segs[2].d / 2], [x, segs[2].d / 2], 'thick', { color: C.pick }))
+    body.push(Paper.line([x0, -segs[0].d / 2], [x0, segs[0].d / 2], 'thick', { color: C.pick }))
     steps.push(step('2. 画轮廓', '按各段直径和长度，上下对称画出阶梯轮廓。', body))
     const dims = []
     let dx = x0
     segs.forEach(s => {
       dims.push(...Paper.dimH(dx, dx + s.l, -30, String(s.l)))
-      dims.push(...Paper.dimV(-s.d / 2, s.d / 2, dx + s.l / 2, 'Ø' + s.d))
+      dims.push(...Paper.leader([dx + s.l / 2, s.d / 2], [0, 1], 'Ø' + s.d, { len: 9 }))
       dx += s.l
     })
     dims.push(...Paper.dimH(x0, x0 + total, -44, String(total)))
