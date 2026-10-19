@@ -32,6 +32,8 @@ LLM 只负责读尺寸数字（Ø20、R30、长度50），这是它擅长的事�
 
 直接用浏览器打开 `index.html` 即可，不需要服务器。
 
+> 也可以直接用 `index-standalone.html`——单文件合并版，CSS 和 JS 全部内联在一个文件里，无需其他任何文件，适合发给别人或快速部署。
+
 > 注意：调用 AI 接口需要联网。如果浏览器报 CORS 错误，可以用本地服务器打开：
 > ```bash
 > # 在项目目录下
@@ -62,7 +64,8 @@ API Key 只存在浏览器 localStorage 里，不会上传到任何服务器。
 
 ```
 mech-drawing-animator/
-├── index.html          # 主页面
+├── index.html            # 主页面（拆分版，引用 css/ 和 js/）
+├── index-standalone.html # 单文件合并版（CSS/JS 全内联，双击即用）
 ├── css/
 │   └── style.css       # 样式
 ├── js/
