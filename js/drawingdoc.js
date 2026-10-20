@@ -199,18 +199,59 @@ const DrawingDoc = (() => {
     }
   }
 
-  /* 内置题库产物（Paper 元素）→ 同一套场景结构 */
+  /* 内置题库产物（Paper 元素）→ 同一套场景结构
+   * 图幅只用两种标准比例（横版/竖版），按图形形态选择：
+   * 横向图形用横版，竖向图形用竖版。同类题切换时纸张尺寸稳定，
+   * 又不会把竖长的吊钩硬塞进横纸里。
+   * 排布时必须扣掉 render.js 的页边距与标题栏，否则内容会压到标题栏上。
+   */
+  const SHEET_LAND = 920 / 660                 // 横版 ≈ 1.394
+  const SHEET_PORT = 660 / 920                 // 竖版 ≈ 0.717
+  const PAD_FRAC = 0.028                       // 与 render.js 的 pad 同源
+  const TB_FRAC = 0.13                         // 与 render.js 的 tbH 同源
+  const MARGIN = 11                            // 图形与图框的最小间隙
+
+  /* 与 render.js 保持一致的页边距 / 标题栏高度 */
+  const frameMetrics = (w, h) => {
+    const pad = Math.min(w, h) * PAD_FRAC
+    const tbH = Math.min(h * TB_FRAC, h - pad * 2 - 10)
+    return { pad, tbH }
+  }
+
   function fromDraw(draw) {
     const all = draw.steps.reduce((a, s) => a.concat(s.els), [])
     const bb = Paper.bbox(all)
-    const m = 14, tb = 22
-    const dx = m - bb.x0, dy = m + tb - bb.y0
+    const bw = Math.max(bb.w, 1), bh = Math.max(bb.h, 1)
+    const ratio = (bw / bh) >= 0.95 ? SHEET_LAND : SHEET_PORT
+
+    // 由约束反解最小 h：宽向 w-2pad ≥ bw+2M；高向 h-2pad-tbH ≥ bh+2M
+    const c = PAD_FRAC * Math.min(ratio, 1)
+    const byWidth = (bw + 2 * MARGIN) / (ratio - 2 * c)
+    const byHeight = (bh + 2 * MARGIN) / (1 - TB_FRAC - 2 * c)
+    let h = Math.max(byWidth, byHeight, 60)
+    let w = h * ratio
+    // pad/tbH 依赖最终尺寸，迭代两轮收敛
+    for (let i = 0; i < 3; i++) {
+      const { pad, tbH } = frameMetrics(w, h)
+      h = Math.max((bw + 2 * MARGIN + 2 * pad) / ratio, bh + 2 * MARGIN + 2 * pad + tbH)
+      w = h * ratio
+    }
+
+    // 在"图框内、标题栏以上"的可用区居中。
+    // 注意坐标系翻转：SVG 里标题栏在图框底部（y 向下），
+    // 换到 paper 坐标（y 向上）后它占的是"下方的小 y"，所以可用区从 pad+tbH 起。
+    const { pad, tbH } = frameMetrics(w, h)
+    const availW = w - 2 * pad
+    const y0 = pad + tbH, y1 = h - pad
+    const dx = pad + availW / 2 - (bb.x0 + bb.x1) / 2
+    const dy = (y0 + y1) / 2 - (bb.y0 + bb.y1) / 2
+
     const title = draw.title.length > 12 ? draw.title.slice(0, 12) + '…' : draw.title
     return {
       title,
       titleFull: draw.title,
       steps: draw.steps.map(s => ({ title: s.title, desc: s.desc, els: Paper.translate(s.els, dx, dy) })),
-      sheet: { w: Math.max(120, bb.w + 2 * m), h: Math.max(90, bb.h + 2 * m + tb), frame: true, titleBlock: true },
+      sheet: { w, h, frame: true, titleBlock: true },
       standard: 'GB/T 4457.4', unit: 'mm',
       warnings: [], confidence: null, summary: '', mode: 'template',
     }

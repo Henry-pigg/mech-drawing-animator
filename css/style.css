@@ -51,6 +51,12 @@ body {
   border: 1px solid #e2e8ef; border-radius: 999px; padding: 3px 10px;
 }
 .tag.is-doc { color: #1c5c96; background: #e8f2fc; border-color: #cfe3f7; }
+/* 版本水印：旧版页面没有这一项，一眼可辨 */
+.build-tag {
+  font-size: 10.5px; color: #9aa6b4; border-left: 1px solid var(--line);
+  padding-left: 9px; margin-left: 2px; letter-spacing: .2px;
+  font-variant-numeric: tabular-nums; user-select: none;
+}
 
 /* ---------- 按钮 ---------- */
 .btn {
@@ -94,6 +100,8 @@ body {
   transition: border-color .15s, background .15s;
 }
 .drop:hover, .drop.over { border-color: var(--blue); background: #f4f8fd; color: var(--blue-d); }
+.drop:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.drop.over { border-style: solid; box-shadow: inset 0 0 0 3px #e3eefb; }
 .drop strong { font-size: 13px; }
 .drop span { font-size: 11.5px; color: var(--muted); line-height: 1.5; }
 .drop svg { color: #8fa4bb; }
@@ -120,6 +128,13 @@ body {
 .issues summary { cursor: pointer; }
 .issues ul { margin: 4px 0 0; padding-left: 16px; line-height: 1.7; }
 .ai-error { color: var(--accent); font-size: 12.5px; line-height: 1.6; }
+.err-hints { margin: 0; padding-left: 17px; font-size: 11.5px; color: var(--ink-2); line-height: 1.75; }
+.err-hints li { margin-bottom: 3px; }
+.raw {
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-size: 10.5px; color: #7b8794; margin-top: 4px;
+  word-break: break-all; line-height: 1.55;
+}
 .hint { font-size: 11.5px; color: var(--muted); line-height: 1.6; margin-top: 4px; }
 
 /* 题库 */
@@ -159,12 +174,15 @@ body {
   width: 100%; height: 100%;
   display: flex; align-items: center; justify-content: center;
 }
+/* width/height 100% + preserveAspectRatio="xMidYMid meet"：
+   SVG 自身永不拉伸，比例不符时只在四周留白。阴影用 drop-shadow，
+   跟随实际绘制的纸张轮廓，而不是元素盒子。 */
 .paper svg.dw {
-  background: #fff;
-  max-width: 100%; max-height: 100%;
-  width: auto; height: auto;
+  display: block;
+  width: 100%;
+  height: 100%;
   border-radius: 2px;
-  box-shadow: 0 6px 24px rgba(20, 30, 45, .13), 0 1px 3px rgba(20, 30, 45, .08);
+  filter: drop-shadow(0 6px 18px rgba(20, 30, 45, .15)) drop-shadow(0 1px 2px rgba(20, 30, 45, .07));
 }
 .variant-bar {
   position: absolute; left: 22px; top: 20px;
@@ -252,6 +270,26 @@ body {
 }
 .modal-box input:focus { border-color: var(--blue); }
 .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+
+/* file:// 打开时的提醒：跨域请求会被浏览器拦掉 */
+.net-warn {
+  margin-top: 12px; padding: 9px 11px; border-radius: 8px;
+  background: #fdf3e3; border: 1px solid #f0ddba; color: #8a5f14;
+  font-size: 11.5px; line-height: 1.7;
+}
+.net-warn.hide { display: none; }
+.net-warn b { color: #6f4a0b; }
+.net-warn code {
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  background: rgba(255,255,255,.7); border-radius: 3px; padding: 1px 4px; font-size: 11px;
+}
+.testbox { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 10px; }
+.testbox summary { font-size: 11.5px; color: var(--muted); cursor: pointer; }
+.testrow { display: flex; align-items: center; gap: 9px; margin-top: 8px; }
+.test-out { font-size: 11.5px; line-height: 1.5; color: var(--ink-2); }
+.test-out.ok { color: var(--ok); }
+.test-out.err { color: var(--accent); }
+.test-out.wait { color: var(--blue); }
 
 .toast {
   position: fixed; left: 50%; bottom: 26px; transform: translate(-50%, 10px);

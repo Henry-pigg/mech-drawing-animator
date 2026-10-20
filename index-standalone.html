@@ -58,6 +58,12 @@ body {
   border: 1px solid #e2e8ef; border-radius: 999px; padding: 3px 10px;
 }
 .tag.is-doc { color: #1c5c96; background: #e8f2fc; border-color: #cfe3f7; }
+/* 版本水印：旧版页面没有这一项，一眼可辨 */
+.build-tag {
+  font-size: 10.5px; color: #9aa6b4; border-left: 1px solid var(--line);
+  padding-left: 9px; margin-left: 2px; letter-spacing: .2px;
+  font-variant-numeric: tabular-nums; user-select: none;
+}
 
 /* ---------- 按钮 ---------- */
 .btn {
@@ -101,6 +107,8 @@ body {
   transition: border-color .15s, background .15s;
 }
 .drop:hover, .drop.over { border-color: var(--blue); background: #f4f8fd; color: var(--blue-d); }
+.drop:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.drop.over { border-style: solid; box-shadow: inset 0 0 0 3px #e3eefb; }
 .drop strong { font-size: 13px; }
 .drop span { font-size: 11.5px; color: var(--muted); line-height: 1.5; }
 .drop svg { color: #8fa4bb; }
@@ -127,6 +135,13 @@ body {
 .issues summary { cursor: pointer; }
 .issues ul { margin: 4px 0 0; padding-left: 16px; line-height: 1.7; }
 .ai-error { color: var(--accent); font-size: 12.5px; line-height: 1.6; }
+.err-hints { margin: 0; padding-left: 17px; font-size: 11.5px; color: var(--ink-2); line-height: 1.75; }
+.err-hints li { margin-bottom: 3px; }
+.raw {
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-size: 10.5px; color: #7b8794; margin-top: 4px;
+  word-break: break-all; line-height: 1.55;
+}
 .hint { font-size: 11.5px; color: var(--muted); line-height: 1.6; margin-top: 4px; }
 
 /* 题库 */
@@ -166,12 +181,15 @@ body {
   width: 100%; height: 100%;
   display: flex; align-items: center; justify-content: center;
 }
+/* width/height 100% + preserveAspectRatio="xMidYMid meet"：
+   SVG 自身永不拉伸，比例不符时只在四周留白。阴影用 drop-shadow，
+   跟随实际绘制的纸张轮廓，而不是元素盒子。 */
 .paper svg.dw {
-  background: #fff;
-  max-width: 100%; max-height: 100%;
-  width: auto; height: auto;
+  display: block;
+  width: 100%;
+  height: 100%;
   border-radius: 2px;
-  box-shadow: 0 6px 24px rgba(20, 30, 45, .13), 0 1px 3px rgba(20, 30, 45, .08);
+  filter: drop-shadow(0 6px 18px rgba(20, 30, 45, .15)) drop-shadow(0 1px 2px rgba(20, 30, 45, .07));
 }
 .variant-bar {
   position: absolute; left: 22px; top: 20px;
@@ -260,6 +278,26 @@ body {
 .modal-box input:focus { border-color: var(--blue); }
 .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
 
+/* file:// 打开时的提醒：跨域请求会被浏览器拦掉 */
+.net-warn {
+  margin-top: 12px; padding: 9px 11px; border-radius: 8px;
+  background: #fdf3e3; border: 1px solid #f0ddba; color: #8a5f14;
+  font-size: 11.5px; line-height: 1.7;
+}
+.net-warn.hide { display: none; }
+.net-warn b { color: #6f4a0b; }
+.net-warn code {
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  background: rgba(255,255,255,.7); border-radius: 3px; padding: 1px 4px; font-size: 11px;
+}
+.testbox { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 10px; }
+.testbox summary { font-size: 11.5px; color: var(--muted); cursor: pointer; }
+.testrow { display: flex; align-items: center; gap: 9px; margin-top: 8px; }
+.test-out { font-size: 11.5px; line-height: 1.5; color: var(--ink-2); }
+.test-out.ok { color: var(--ok); }
+.test-out.err { color: var(--accent); }
+.test-out.wait { color: var(--blue); }
+
 .toast {
   position: fixed; left: 50%; bottom: 26px; transform: translate(-50%, 10px);
   background: #1d2733; color: #fff; font-size: 12.5px; padding: 8px 14px;
@@ -297,6 +335,7 @@ body {
       <button id="btn-svg" class="btn ghost" title="导出矢量图">SVG</button>
       <button id="btn-png" class="btn ghost" title="导出图片">PNG</button>
       <button id="btn-settings" class="btn">⚙ 设置</button>
+      <span id="build-tag" class="build-tag" title="当前页面版本。若显示的不是 r4，说明浏览器用了旧缓存，请强制刷新（Ctrl+F5）"></span>
     </div>
   </header>
 
@@ -304,12 +343,12 @@ body {
     <aside class="side">
       <section class="card">
         <h2>识别题目</h2>
-        <div id="drop" class="drop">
+        <div id="drop" class="drop" role="button" tabindex="0" aria-label="上传题目照片，或把图片拖进来、直接粘贴">
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
             <path d="M12 16V4m0 0L7 9m5-5 5 5M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>
           </svg>
           <strong>上传题目照片</strong>
-          <span>AI 判断题型、读尺寸，拆成作图步骤</span>
+          <span>点这里选图 · 也可以拖进来，或直接 Ctrl+V 粘贴</span>
         </div>
         <input type="file" id="file-input" accept="image/*" hidden>
         <div id="ai-status" class="ai-status"></div>
@@ -374,6 +413,14 @@ body {
       <input id="cfg-apikey" type="password" placeholder="sk-...">
       <label>模型</label>
       <input id="cfg-model" type="text" placeholder="gpt-4o" value="gpt-4o">
+      <div id="net-warn" class="net-warn hide"></div>
+      <details class="testbox">
+        <summary>连接测试（保存后可点）</summary>
+        <div class="testrow">
+          <button id="btn-test" class="btn">测试连通</button>
+          <span id="test-out" class="test-out"></span>
+        </div>
+      </details>
       <div class="modal-actions">
         <button id="btn-cancel-settings" class="btn ghost">取消</button>
         <button id="btn-save-settings" class="btn primary">保存</button>
@@ -386,6 +433,8 @@ body {
   // ===== js/config.js =====
 const AppConfig = {
   KEY: 'mech_draw_config',
+  /* 构建标识：改版时递增，页面上可见，方便确认打开的是哪一版 */
+  BUILD: 'r4 · svg',
   get() {
     try { return JSON.parse(localStorage.getItem(this.KEY)) || {} }
     catch { return {} }
@@ -2329,18 +2378,59 @@ const DrawingDoc = (() => {
     }
   }
 
-  /* 内置题库产物（Paper 元素）→ 同一套场景结构 */
+  /* 内置题库产物（Paper 元素）→ 同一套场景结构
+   * 图幅只用两种标准比例（横版/竖版），按图形形态选择：
+   * 横向图形用横版，竖向图形用竖版。同类题切换时纸张尺寸稳定，
+   * 又不会把竖长的吊钩硬塞进横纸里。
+   * 排布时必须扣掉 render.js 的页边距与标题栏，否则内容会压到标题栏上。
+   */
+  const SHEET_LAND = 920 / 660                 // 横版 ≈ 1.394
+  const SHEET_PORT = 660 / 920                 // 竖版 ≈ 0.717
+  const PAD_FRAC = 0.028                       // 与 render.js 的 pad 同源
+  const TB_FRAC = 0.13                         // 与 render.js 的 tbH 同源
+  const MARGIN = 11                            // 图形与图框的最小间隙
+
+  /* 与 render.js 保持一致的页边距 / 标题栏高度 */
+  const frameMetrics = (w, h) => {
+    const pad = Math.min(w, h) * PAD_FRAC
+    const tbH = Math.min(h * TB_FRAC, h - pad * 2 - 10)
+    return { pad, tbH }
+  }
+
   function fromDraw(draw) {
     const all = draw.steps.reduce((a, s) => a.concat(s.els), [])
     const bb = Paper.bbox(all)
-    const m = 14, tb = 22
-    const dx = m - bb.x0, dy = m + tb - bb.y0
+    const bw = Math.max(bb.w, 1), bh = Math.max(bb.h, 1)
+    const ratio = (bw / bh) >= 0.95 ? SHEET_LAND : SHEET_PORT
+
+    // 由约束反解最小 h：宽向 w-2pad ≥ bw+2M；高向 h-2pad-tbH ≥ bh+2M
+    const c = PAD_FRAC * Math.min(ratio, 1)
+    const byWidth = (bw + 2 * MARGIN) / (ratio - 2 * c)
+    const byHeight = (bh + 2 * MARGIN) / (1 - TB_FRAC - 2 * c)
+    let h = Math.max(byWidth, byHeight, 60)
+    let w = h * ratio
+    // pad/tbH 依赖最终尺寸，迭代两轮收敛
+    for (let i = 0; i < 3; i++) {
+      const { pad, tbH } = frameMetrics(w, h)
+      h = Math.max((bw + 2 * MARGIN + 2 * pad) / ratio, bh + 2 * MARGIN + 2 * pad + tbH)
+      w = h * ratio
+    }
+
+    // 在"图框内、标题栏以上"的可用区居中。
+    // 注意坐标系翻转：SVG 里标题栏在图框底部（y 向下），
+    // 换到 paper 坐标（y 向上）后它占的是"下方的小 y"，所以可用区从 pad+tbH 起。
+    const { pad, tbH } = frameMetrics(w, h)
+    const availW = w - 2 * pad
+    const y0 = pad + tbH, y1 = h - pad
+    const dx = pad + availW / 2 - (bb.x0 + bb.x1) / 2
+    const dy = (y0 + y1) / 2 - (bb.y0 + bb.y1) / 2
+
     const title = draw.title.length > 12 ? draw.title.slice(0, 12) + '…' : draw.title
     return {
       title,
       titleFull: draw.title,
       steps: draw.steps.map(s => ({ title: s.title, desc: s.desc, els: Paper.translate(s.els, dx, dy) })),
-      sheet: { w: Math.max(120, bb.w + 2 * m), h: Math.max(90, bb.h + 2 * m + tb), frame: true, titleBlock: true },
+      sheet: { w, h, frame: true, titleBlock: true },
       standard: 'GB/T 4457.4', unit: 'mm',
       warnings: [], confidence: null, summary: '', mode: 'template',
     }
@@ -2381,12 +2471,16 @@ class SvgRender {
     const pad = Math.min(w, h) * 0.028
     const frame = { x: pad, y: pad, w: w - pad * 2, h: h - pad * 2 }
     const tbW = Math.min(w * 0.32, w - pad * 2 - 10)
-    const tbH = Math.min(h * 0.11, h - pad * 2 - 10)
+    /* 标题栏高度必须与 DrawingDoc.fromDraw 预留的 TB_FRAC 对齐，
+       否则内容会压到标题栏上。0.13 是两边共用的约定值。 */
+    const tbH = Math.min(h * 0.13, h - pad * 2 - 10)
     const tb = { x: frame.x + frame.w - tbW, y: frame.y + frame.h - tbH, w: tbW, h: tbH }
 
     const SY = y => h - y
     const parts = []
-    parts.push(`<svg class="dw" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${esc(sc.title || '')}">`)
+    /* width/height 与 viewBox 同值：给出确定的固有比例，
+       即使外层 CSS 把它塞进不同形状的盒子，preserveAspectRatio 也只会留白、绝不拉伸。 */
+    parts.push(`<svg class="dw" viewBox="0 0 ${w} ${h}" width="${r(w)}" height="${r(h)}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${esc(sc.title || '')}">`)
     parts.push(`<style>${SvgRender.CSS}</style>`)
     parts.push(`<defs><pattern id="grid" width="${20 * k}" height="${20 * k}" patternUnits="userSpaceOnUse"><path d="M${20 * k} 0H0V${20 * k}" fill="none" stroke="#eef2f7" stroke-width="${Math.max(0.6, k * 0.4)}"/></pattern></defs>`)
     parts.push(`<rect width="${w}" height="${h}" fill="#fff"/>`)
@@ -2476,23 +2570,27 @@ class SvgRender {
     }
 
     const out = [`<g data-step="${si}" class="step">`]
+    /* 尺寸标注不是"画"出来的轮廓，而是标注，让它几乎立刻出现：
+       否则最后一步的尺寸要等前面几组线型依次生长完才看得见，很像"没画出来"。 */
+    const order = ['solid', 'hidden', 'thin', 'center', 'dim']
     let gi = 0
-    Object.keys(groups).forEach(key => {
+    order.forEach(key => {
       const d = groups[key].join('')
       if (!d) return
       const id = `mk-${si}-${key}`
-      const delay = animate ? gi * 80 : 0
-      gi++
+      const delay = key === 'dim' ? 0 : (animate ? gi * 70 : 0)
+      if (key !== 'dim') gi++
       if (animate) {
         out.push(`<mask id="${id}" maskUnits="userSpaceOnUse" x="0" y="0" width="100%" height="100%">
-          <path d="${d}" fill="none" stroke="#fff" stroke-width="${sw[key] * 6 + 1}" stroke-linecap="round" class="rv" pathLength="1" style="animation-delay:${delay}ms"/>
+          <path d="${d}" fill="none" stroke="#fff" stroke-width="${sw[key] * 6 + 1}" stroke-linecap="round" class="rv" pathLength="1" style="animation-delay:${delay}ms"${key === 'dim' ? ' data-dim="1"' : ''}/>
         </mask>`)
       }
       out.push(`<path d="${d}" fill="none" stroke="${key === 'dim' ? '#2f5d9e' : '#121820'}" stroke-width="${r(sw[key])}" stroke-linecap="round" stroke-linejoin="round"${dash[key] ? ` stroke-dasharray="${dash[key]}"` : ''}${animate ? ` mask="url(#${id})"` : ''}/>`)
     })
 
     extras.forEach((x, idx) => {
-      const delay = animate ? 260 + Math.min(6, idx) * 60 : 0
+      /* 箭头/填充跟着线条走，早点出来；文字稍后淡入，但别拖太久 */
+      const delay = animate ? 180 + Math.min(8, idx) * 45 : 0
       if (x.kind === 'text') {
         out.push(x.html.replace('<text ', `<text class="${animate ? 'fi' : ''}" style="animation-delay:${delay}ms" `))
       } else if (x.kind === 'dot') {
@@ -2703,7 +2801,7 @@ class Recognizer {
 
   async recognize(file, onIssue) {
     if (!AppConfig.hasApiKey) throw new Error('请先在设置中填入 API Key')
-    const dataUrl = await this._toDataUrl(file)
+    const dataUrl = await this._prepare(file)
     let lastErr = null
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
@@ -2718,6 +2816,42 @@ class Recognizer {
       }
     }
     throw lastErr
+  }
+
+  /* 手机照片动辄 4000px、好几 MB，直接塞给接口容易超时或被拒（413/400）。
+     先等比压到长边 1600px、JPEG 0.85 —— 识图够用，体积能小一个数量级。 */
+  async _prepare(file) {
+    const raw = await this._toDataUrl(file)
+    try {
+      const shrunk = await this._shrink(raw, 1600, 0.85)
+      /* 压完反而更大（小图重编码会变大）就退回原图 */
+      return shrunk.length < raw.length ? shrunk : raw
+    } catch {
+      return raw
+    }
+  }
+
+  _shrink(dataUrl, maxSide, quality) {
+    return new Promise((resolve, reject) => {
+      const img = new Image()
+      img.onload = () => {
+        const { naturalWidth: w, naturalHeight: h } = img
+        if (!w || !h) { reject(new Error('图片尺寸异常')); return }
+        const k = Math.min(1, maxSide / Math.max(w, h))
+        if (k >= 1 && dataUrl.length < 900 * 1024) { resolve(dataUrl); return }
+        const cw = Math.round(w * k), ch = Math.round(h * k)
+        const cv = document.createElement('canvas')
+        cv.width = cw; cv.height = ch
+        const ctx = cv.getContext('2d')
+        // JPEG 没有透明通道，先铺白底，免得透明 PNG 压出来是黑底
+        ctx.fillStyle = '#fff'
+        ctx.fillRect(0, 0, cw, ch)
+        ctx.drawImage(img, 0, 0, cw, ch)
+        resolve(cv.toDataURL('image/jpeg', quality))
+      }
+      img.onerror = () => reject(new Error('图片解码失败'))
+      img.src = dataUrl
+    })
   }
 
   async _call(dataUrl, repair) {
@@ -2740,12 +2874,22 @@ class Recognizer {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${this.cfg.apiKey}` },
       body: JSON.stringify(body),
+      signal: this._sig ? this._sig() : undefined,
     })
+    if (res.status === 413) throw new Error('413 图片太大，接口拒绝接收')
     if (!res.ok) throw new Error(`接口返回 ${res.status}：${(await res.text()).slice(0, 200)}`)
     const json = await res.json()
     const content = json.choices?.[0]?.message?.content
     if (!content) throw new Error('接口未返回内容')
-    return content
+    return typeof content === 'string' ? content : JSON.stringify(content)
+  }
+
+  /* 120 秒硬超时：不设的话，网络卡住时界面会永远停在"正在识图…" */
+  _sig() {
+    if (this._ac) this._ac.abort()
+    this._ac = new AbortController()
+    this._timer = setTimeout(() => this._ac && this._ac.abort(), 120000)
+    return this._ac.signal
   }
 
   _toDataUrl(file) {
@@ -2937,14 +3081,44 @@ document.addEventListener('DOMContentLoaded', () => {
     $('ai-result').classList.add('hide')
   }
 
-  drop.onclick = () => fileInput.click()
-  ;['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over') }))
-  ;['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over') }))
-  drop.addEventListener('drop', e => {
-    const f = e.dataTransfer.files && e.dataTransfer.files[0]
-    if (f) handleFile(f)
+  /* 点整块上传区都能触发；用 keydown 支持回车/空格，
+     并且这里只在"确实是键盘操作"时才 click，避免部分浏览器里 click 事件冒泡导致弹两次 */
+  drop.onclick = e => { e.preventDefault(); fileInput.click() }
+  drop.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click() }
   })
-  fileInput.onchange = e => { const f = e.target.files[0]; if (f) handleFile(f) }
+
+  ;['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => {
+    e.preventDefault(); e.stopPropagation(); drop.classList.add('over')
+  }))
+  ;['dragleave', 'dragend'].forEach(ev => drop.addEventListener(ev, e => {
+    e.preventDefault(); drop.classList.remove('over')
+  }))
+  drop.addEventListener('drop', e => {
+    e.preventDefault(); e.stopPropagation()
+    drop.classList.remove('over')
+    const dt = e.dataTransfer
+    if (!dt) return
+    const f = (dt.files && dt.files[0]) || null
+    if (f) { handleFile(f); return }
+    // 有些浏览器拖图片过来时 files 为空，得从 items 取
+    const it = [...(dt.items || [])].find(i => i.kind === 'file' && i.type.startsWith('image/'))
+    const g = it && it.getAsFile()
+    if (g) handleFile(g)
+    else toast('没读到图片，换个方式：点这里选图，或直接粘贴', 'err')
+  })
+
+  /* 整个窗口都接受拖放，避免拖到边上时浏览器直接打开图片、把页面顶掉 */
+  ;['dragover', 'drop'].forEach(ev => window.addEventListener(ev, e => {
+    if (e.target.closest && e.target.closest('#drop')) return
+    e.preventDefault()
+  }))
+
+  fileInput.onchange = e => {
+    const f = e.target.files && e.target.files[0]
+    handleFile(f)
+  }
+
   // 支持直接粘贴截图
   window.addEventListener('paste', e => {
     const items = e.clipboardData && e.clipboardData.items
@@ -2958,8 +3132,21 @@ document.addEventListener('DOMContentLoaded', () => {
   })
 
   async function handleFile(file) {
-    if (!file.type.startsWith('image/')) { toast('请上传图片文件', 'err'); return }
-    if (!AppConfig.hasApiKey) { openSettings(); toast('先填 API Key，再上传题目', 'err'); return }
+    /* 选文件的 input 有个坑：不清空 value 的话，再次选同一张图不会触发 change，
+       表现就是"点了没反应"。所以无论成功失败，第一时间就清空。 */
+    const reset = () => { try { fileInput.value = '' } catch { } }
+    if (!file) { reset(); return }
+
+    if (!file.type || !file.type.startsWith('image/')) {
+      reset(); toast('请上传图片文件', 'err'); return
+    }
+    if (!AppConfig.hasApiKey) {
+      reset()
+      openSettings()
+      toast('先填 API Key，再上传题目', 'err')
+      return
+    }
+
     status.className = 'ai-status loading'
     status.textContent = '正在识图…'
     $('ai-result').classList.add('hide')
@@ -2980,9 +3167,9 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (err) {
       status.className = 'ai-status err'
       status.textContent = '识别失败'
-      showAiError(err.message)
+      showAiError(err)
     } finally {
-      fileInput.value = ''
+      reset()
     }
   }
 
@@ -3002,22 +3189,127 @@ document.addEventListener('DOMContentLoaded', () => {
     `
   }
 
-  function showAiError(msg) {
+  /* 把各种失败翻译成用户能照着做的提示 */
+  function explainError(err) {
+    const msg = String((err && err.message) || err || '未知错误')
+    const name = (err && err.name) || ''
+    const isFile = location.protocol === 'file:'
+    if (name === 'AbortError' || /aborted|timeout|timed out|超时/i.test(msg)) {
+      return {
+        title: '请求超时（等了 2 分钟）',
+        hints: ['图片可能太大或网络太慢 —— 现在已经会自动压缩到长边 1600px，若仍超时就换张清晰但小一点的图。', '也可能是接口地址填错、或该服务此刻不通。'],
+        raw: msg,
+      }
+    }
+    if (/413|图片太大/i.test(msg)) {
+      return { title: '图片太大被接口拒绝（413）', hints: ['把照片裁到只保留题目部分，或降低分辨率再上传。'], raw: msg }
+    }
+    if (/Failed to fetch|NetworkError|ERR_FAILED|Load failed/i.test(msg)) {
+      return {
+        title: '网络请求被拦住',
+        hints: [
+          isFile
+            ? '你现在是直接双击打开 HTML（file:// 协议）。部分浏览器会拦掉这种页面的跨域请求 —— 这是最常见的原因。'
+            : '请求没能到达接口，可能是网络不通、接口地址写错，或对方不允许浏览器直接调用。',
+          isFile ? '解决办法：用本地服务器打开，或改用下方"单文件版 + 支持 CORS 的接口"。' : '先确认 API Base URL 是否正确（OpenAI 官方是 https://api.openai.com/v1）。',
+          '很多中转/代理接口默认不允许浏览器跨域调用，需要服务端放行 CORS，或改走本地代理。',
+        ],
+        raw: msg,
+      }
+    }
+    if (/401|403|Unauthorized|invalid.*key|Incorrect API key/i.test(msg)) {
+      return { title: 'API Key 无效或没有权限', hints: ['到设置里重新粘贴 Key，注意不要带空格或换行。'], raw: msg }
+    }
+    if (/404/.test(msg)) {
+      return { title: '接口地址或模型名不对（404）', hints: ['检查 Base URL 末尾是否多了 /v1/v1，以及模型名是否被该服务支持。'], raw: msg }
+    }
+    if (/429|quota|rate limit/i.test(msg)) {
+      return { title: '额度不足或被限流（429）', hints: ['稍后再试，或换一个 Key / 模型。'], raw: msg }
+    }
+    if (/timeout|timed out|ETIMEDOUT/i.test(msg)) {
+      return { title: '请求超时', hints: ['图片可能太大，或网络太慢。可以换一张小一点的图再试。'], raw: msg }
+    }
+    if (/无法解析|无法从返回|解析出 JSON|不是合法 JSON|steps 缺失|没有任何可渲染|output|看不清/i.test(msg)) {
+      return {
+        title: '模型返回的内容没法当成图纸',
+        hints: [
+          '它可能没看懂图，或没按要求输出 JSON。换一个指令跟随更强的视觉模型（gpt-4o / qwen-vl-max / glm-4v）通常能解决。',
+          '也可以把题目裁得更清楚一点再传。',
+        ],
+        raw: msg,
+      }
+    }
+    return { title: '识别失败', hints: ['可以换一张更清晰的图，或在设置里换一个支持图片输入的模型。'], raw: msg }
+  }
+
+  function showAiError(err) {
     const card = $('ai-result')
+    const info = explainError(err)
     card.classList.remove('hide')
-    card.innerHTML = `<div class="ai-error">${escapeHtml(msg)}</div>
-      <p class="hint">可以换一张更清晰的图，或在设置里换一个支持图片输入的模型。</p>`
+    card.innerHTML = `<div class="ai-error"><b>${escapeHtml(info.title)}</b></div>
+      <ul class="err-hints">${info.hints.map(h => `<li>${escapeHtml(h)}</li>`).join('')}</ul>
+      <details class="issues"><summary>原始错误</summary><div class="raw">${escapeHtml(info.raw)}</div></details>`
   }
 
   /* ---------- 设置 ---------- */
   const modal = $('settings-modal')
+
+  /* 直接双击 HTML 打开（file://）时，部分浏览器会把跨域请求拦成 "Failed to fetch"，
+     这是"能选图但永远识别失败"最常见的原因，所以在设置里直接说清楚。 */
+  function refreshNetWarn() {
+    const box = $('net-warn')
+    if (location.protocol !== 'file:') { box.classList.add('hide'); return }
+    box.classList.remove('hide')
+    box.innerHTML = `<b>当前是以 file:// 打开的</b><br>
+      浏览器可能拦截对本接口的请求，症状就是选图后一直"识别失败 / Failed to fetch"。
+      在项目目录下起一个本地服务器再访问即可：<br>
+      <code>python -m http.server 8000</code><br>
+      然后打开 <code>http://localhost:8000/index.html</code>`
+  }
+
   function openSettings() {
     const cfg = AppConfig.get()
     $('cfg-baseurl').value = cfg.baseUrl || 'https://api.openai.com/v1'
     $('cfg-apikey').value = cfg.apiKey || ''
     $('cfg-model').value = cfg.model || 'gpt-4o'
+    refreshNetWarn()
     modal.classList.remove('hide')
   }
+
+  /* 连通性测试：先打 /models（不耗额度），失败再解释原因 */
+  async function testConn() {
+    const out = $('test-out')
+    const cfg = {
+      baseUrl: $('cfg-baseurl').value.trim() || 'https://api.openai.com/v1',
+      apiKey: $('cfg-apikey').value.trim(),
+      model: $('cfg-model').value.trim() || 'gpt-4o',
+    }
+    if (!cfg.apiKey) { out.className = 'test-out err'; out.textContent = '先填 API Key'; return }
+    out.className = 'test-out wait'
+    out.textContent = '正在连接…'
+    const t0 = performance.now()
+    try {
+      const res = await fetch(`${cfg.baseUrl.replace(/\/$/, '')}/models`, {
+        headers: { Authorization: `Bearer ${cfg.apiKey}` },
+      })
+      const ms = Math.round(performance.now() - t0)
+      if (res.ok) {
+        let names = []
+        try { const j = await res.json(); names = (j.data || []).map(m => m.id).slice(0, 40) } catch { }
+        const hit = names.length && !names.includes(cfg.model)
+        out.className = 'test-out ok'
+        out.textContent = `通了（${ms} ms）` + (hit ? `，但列表里没有 ${cfg.model}，确认下模型名` : '')
+      } else {
+        out.className = 'test-out err'
+        out.textContent = `接口返回 ${res.status}：${(await res.text()).slice(0, 120)}`
+      }
+    } catch (e) {
+      out.className = 'test-out err'
+      out.textContent = explainError(e).title + '（详见识别失败时的提示）'
+    }
+  }
+
+  $('btn-test').onclick = testConn
   $('btn-settings').onclick = openSettings
   $('btn-cancel-settings').onclick = () => modal.classList.add('hide')
   $('btn-save-settings').onclick = () => {
@@ -3052,6 +3344,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 默认示例
   loadTemplate('prism3', { sides: 5 })
+  $('build-tag').textContent = AppConfig.BUILD
   if (!AppConfig.hasApiKey) {
     status.textContent = '未配置识别接口 · 可先用下方题库'
     status.className = 'ai-status'

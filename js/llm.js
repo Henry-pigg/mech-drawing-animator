@@ -4,7 +4,7 @@ class Recognizer {
 
   async recognize(file, onIssue) {
     if (!AppConfig.hasApiKey) throw new Error('请先在设置中填入 API Key')
-    const dataUrl = await this._toDataUrl(file)
+    const dataUrl = await this._prepare(file)
     let lastErr = null
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
@@ -19,6 +19,42 @@ class Recognizer {
       }
     }
     throw lastErr
+  }
+
+  /* 手机照片动辄 4000px、好几 MB，直接塞给接口容易超时或被拒（413/400）。
+     先等比压到长边 1600px、JPEG 0.85 —— 识图够用，体积能小一个数量级。 */
+  async _prepare(file) {
+    const raw = await this._toDataUrl(file)
+    try {
+      const shrunk = await this._shrink(raw, 1600, 0.85)
+      /* 压完反而更大（小图重编码会变大）就退回原图 */
+      return shrunk.length < raw.length ? shrunk : raw
+    } catch {
+      return raw
+    }
+  }
+
+  _shrink(dataUrl, maxSide, quality) {
+    return new Promise((resolve, reject) => {
+      const img = new Image()
+      img.onload = () => {
+        const { naturalWidth: w, naturalHeight: h } = img
+        if (!w || !h) { reject(new Error('图片尺寸异常')); return }
+        const k = Math.min(1, maxSide / Math.max(w, h))
+        if (k >= 1 && dataUrl.length < 900 * 1024) { resolve(dataUrl); return }
+        const cw = Math.round(w * k), ch = Math.round(h * k)
+        const cv = document.createElement('canvas')
+        cv.width = cw; cv.height = ch
+        const ctx = cv.getContext('2d')
+        // JPEG 没有透明通道，先铺白底，免得透明 PNG 压出来是黑底
+        ctx.fillStyle = '#fff'
+        ctx.fillRect(0, 0, cw, ch)
+        ctx.drawImage(img, 0, 0, cw, ch)
+        resolve(cv.toDataURL('image/jpeg', quality))
+      }
+      img.onerror = () => reject(new Error('图片解码失败'))
+      img.src = dataUrl
+    })
   }
 
   async _call(dataUrl, repair) {
@@ -41,12 +77,22 @@ class Recognizer {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${this.cfg.apiKey}` },
       body: JSON.stringify(body),
+      signal: this._sig ? this._sig() : undefined,
     })
+    if (res.status === 413) throw new Error('413 图片太大，接口拒绝接收')
     if (!res.ok) throw new Error(`接口返回 ${res.status}：${(await res.text()).slice(0, 200)}`)
     const json = await res.json()
     const content = json.choices?.[0]?.message?.content
     if (!content) throw new Error('接口未返回内容')
-    return content
+    return typeof content === 'string' ? content : JSON.stringify(content)
+  }
+
+  /* 120 秒硬超时：不设的话，网络卡住时界面会永远停在"正在识图…" */
+  _sig() {
+    if (this._ac) this._ac.abort()
+    this._ac = new AbortController()
+    this._timer = setTimeout(() => this._ac && this._ac.abort(), 120000)
+    return this._ac.signal
   }
 
   _toDataUrl(file) {

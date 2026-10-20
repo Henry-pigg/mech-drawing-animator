@@ -29,12 +29,16 @@ class SvgRender {
     const pad = Math.min(w, h) * 0.028
     const frame = { x: pad, y: pad, w: w - pad * 2, h: h - pad * 2 }
     const tbW = Math.min(w * 0.32, w - pad * 2 - 10)
-    const tbH = Math.min(h * 0.11, h - pad * 2 - 10)
+    /* 标题栏高度必须与 DrawingDoc.fromDraw 预留的 TB_FRAC 对齐，
+       否则内容会压到标题栏上。0.13 是两边共用的约定值。 */
+    const tbH = Math.min(h * 0.13, h - pad * 2 - 10)
     const tb = { x: frame.x + frame.w - tbW, y: frame.y + frame.h - tbH, w: tbW, h: tbH }
 
     const SY = y => h - y
     const parts = []
-    parts.push(`<svg class="dw" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${esc(sc.title || '')}">`)
+    /* width/height 与 viewBox 同值：给出确定的固有比例，
+       即使外层 CSS 把它塞进不同形状的盒子，preserveAspectRatio 也只会留白、绝不拉伸。 */
+    parts.push(`<svg class="dw" viewBox="0 0 ${w} ${h}" width="${r(w)}" height="${r(h)}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${esc(sc.title || '')}">`)
     parts.push(`<style>${SvgRender.CSS}</style>`)
     parts.push(`<defs><pattern id="grid" width="${20 * k}" height="${20 * k}" patternUnits="userSpaceOnUse"><path d="M${20 * k} 0H0V${20 * k}" fill="none" stroke="#eef2f7" stroke-width="${Math.max(0.6, k * 0.4)}"/></pattern></defs>`)
     parts.push(`<rect width="${w}" height="${h}" fill="#fff"/>`)
@@ -124,23 +128,27 @@ class SvgRender {
     }
 
     const out = [`<g data-step="${si}" class="step">`]
+    /* 尺寸标注不是"画"出来的轮廓，而是标注，让它几乎立刻出现：
+       否则最后一步的尺寸要等前面几组线型依次生长完才看得见，很像"没画出来"。 */
+    const order = ['solid', 'hidden', 'thin', 'center', 'dim']
     let gi = 0
-    Object.keys(groups).forEach(key => {
+    order.forEach(key => {
       const d = groups[key].join('')
       if (!d) return
       const id = `mk-${si}-${key}`
-      const delay = animate ? gi * 80 : 0
-      gi++
+      const delay = key === 'dim' ? 0 : (animate ? gi * 70 : 0)
+      if (key !== 'dim') gi++
       if (animate) {
         out.push(`<mask id="${id}" maskUnits="userSpaceOnUse" x="0" y="0" width="100%" height="100%">
-          <path d="${d}" fill="none" stroke="#fff" stroke-width="${sw[key] * 6 + 1}" stroke-linecap="round" class="rv" pathLength="1" style="animation-delay:${delay}ms"/>
+          <path d="${d}" fill="none" stroke="#fff" stroke-width="${sw[key] * 6 + 1}" stroke-linecap="round" class="rv" pathLength="1" style="animation-delay:${delay}ms"${key === 'dim' ? ' data-dim="1"' : ''}/>
         </mask>`)
       }
       out.push(`<path d="${d}" fill="none" stroke="${key === 'dim' ? '#2f5d9e' : '#121820'}" stroke-width="${r(sw[key])}" stroke-linecap="round" stroke-linejoin="round"${dash[key] ? ` stroke-dasharray="${dash[key]}"` : ''}${animate ? ` mask="url(#${id})"` : ''}/>`)
     })
 
     extras.forEach((x, idx) => {
-      const delay = animate ? 260 + Math.min(6, idx) * 60 : 0
+      /* 箭头/填充跟着线条走，早点出来；文字稍后淡入，但别拖太久 */
+      const delay = animate ? 180 + Math.min(8, idx) * 45 : 0
       if (x.kind === 'text') {
         out.push(x.html.replace('<text ', `<text class="${animate ? 'fi' : ''}" style="animation-delay:${delay}ms" `))
       } else if (x.kind === 'dot') {
