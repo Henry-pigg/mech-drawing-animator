@@ -3,296 +3,385 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>机械制图过程演示 · 画法几何</title>
+  <title>机械制图 · 分步绘制</title>
   <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
-  --ink: #1a1f24;
-  --muted: #6b7480;
-  --line: #e3e7ec;
-  --bg: #f4f6f8;
-  --blue: #2f6f9f;
-  --blue-d: #245a83;
+  --ink: #121820;
+  --ink-2: #46525f;
+  --muted: #7b8794;
+  --line: #e4e9ef;
+  --line-2: #d3dae2;
+  --bg: #f3f5f8;
+  --paper: #ffffff;
+  --blue: #2f5d9e;
+  --blue-d: #244a80;
   --accent: #c0392b;
+  --ok: #2e8b57;
+  --warn: #c9821a;
 }
 
+html, body { height: 100%; }
 body {
   font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
   background: var(--bg);
   color: var(--ink);
+  font-size: 13.5px;
   display: flex;
   flex-direction: column;
-  height: 100vh;
   overflow: hidden;
-  font-size: 14px;
 }
 
-header {
+/* ---------- 顶栏 ---------- */
+.bar {
+  height: 56px;
+  flex-shrink: 0;
   background: #fff;
   border-bottom: 1px solid var(--line);
-  padding: 10px 18px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  flex-shrink: 0;
+  justify-content: space-between;
+  padding: 0 16px;
 }
-.brand { display: flex; align-items: center; gap: 12px; }
-.logo {
+.brand { display: flex; align-items: center; gap: 11px; }
+.mark {
   width: 34px; height: 34px; border-radius: 9px;
-  background: linear-gradient(135deg, #2f6f9f, #1f4e73);
+  background: linear-gradient(135deg, #2f5d9e, #1c3f6e);
   color: #fff; display: flex; align-items: center; justify-content: center;
-  font-size: 20px; font-weight: 700;
 }
-header h1 { font-size: 16px; font-weight: 600; letter-spacing: .2px; }
-header .sub { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
-
-main { flex: 1; display: flex; overflow: hidden; }
-
-.sidebar {
-  width: 232px;
-  background: #fff;
-  border-right: 1px solid var(--line);
-  padding: 14px 14px 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  overflow: hidden;
-  flex-shrink: 0;
+.brand-txt h1 { font-size: 15px; font-weight: 650; letter-spacing: .2px; }
+.brand-txt p { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.bar-right { display: flex; align-items: center; gap: 8px; }
+.tag {
+  font-size: 11.5px; color: var(--ink-2); background: #eef2f7;
+  border: 1px solid #e2e8ef; border-radius: 999px; padding: 3px 10px;
 }
-.sidebar.right { border-right: none; border-left: 1px solid var(--line); width: 268px; }
+.tag.is-doc { color: #1c5c96; background: #e8f2fc; border-color: #cfe3f7; }
 
-.panel { display: flex; flex-direction: column; gap: 8px; }
-.panel.grow { flex: 1; min-height: 0; }
-.panel.last { border-top: 1px solid var(--line); padding-top: 10px; }
-.panel h3 {
-  font-size: 11px; color: var(--muted); font-weight: 600;
-  letter-spacing: 1.2px; text-transform: uppercase;
+/* ---------- 按钮 ---------- */
+.btn {
+  border: 1px solid var(--line-2); background: #fff; color: var(--ink);
+  padding: 7px 12px; border-radius: 7px; font-size: 12.5px; cursor: pointer;
+  transition: background .14s, border-color .14s, color .14s;
+  white-space: nowrap;
+}
+.btn:hover { background: #f6f8fb; border-color: #c3ccd6; }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+.btn.primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+.btn.primary:hover { background: var(--blue-d); border-color: var(--blue-d); }
+.btn.ghost { background: transparent; border-color: transparent; color: var(--ink-2); }
+.btn.ghost:hover { background: #eef2f7; }
+
+/* ---------- 布局 ---------- */
+.layout {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr) 236px;
+  gap: 0;
+}
+.side {
+  background: #fff; border-right: 1px solid var(--line);
+  display: flex; flex-direction: column; gap: 0; overflow: hidden;
+}
+.side .card { padding: 13px 14px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 9px; }
+.side .card.grow { flex: 1; min-height: 0; border-bottom: none; }
+.card h2, .rail h2 {
+  font-size: 11px; letter-spacing: 1.1px; text-transform: uppercase;
+  color: var(--muted); font-weight: 650;
 }
 
-.canvas-area {
-  flex: 1; position: relative; display: flex; align-items: stretch; justify-content: stretch;
-  background: #eef1f4; padding: 10px; min-width: 0;
+/* 上传区 */
+.drop {
+  border: 1.5px dashed #cfd9e3; border-radius: 10px;
+  padding: 18px 12px; text-align: center; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  color: var(--ink-2); background: #fbfcfe;
+  transition: border-color .15s, background .15s;
 }
-#canvas { width: 100%; height: 100%; background: #fff; border-radius: 6px; box-shadow: 0 2px 12px rgba(20,30,40,.08); }
+.drop:hover, .drop.over { border-color: var(--blue); background: #f4f8fd; color: var(--blue-d); }
+.drop strong { font-size: 13px; }
+.drop span { font-size: 11.5px; color: var(--muted); line-height: 1.5; }
+.drop svg { color: #8fa4bb; }
 
-.btn-primary {
-  background: var(--blue); color: #fff; border: none;
-  padding: 10px 14px; border-radius: 7px; cursor: pointer;
-  font-size: 13.5px; width: 100%; transition: background .15s;
+.ai-status { font-size: 12px; color: var(--muted); min-height: 16px; }
+.ai-status.loading { color: var(--blue); }
+.ai-status.ok { color: var(--ok); }
+.ai-status.err { color: var(--accent); }
+
+.ai-result {
+  border: 1px solid var(--line); border-radius: 9px; padding: 10px;
+  display: flex; flex-direction: column; gap: 7px; background: #fafbfd;
 }
-.btn-primary:hover { background: var(--blue-d); }
-
-.btn-secondary {
-  background: #fff; color: var(--ink); border: 1px solid var(--line);
-  padding: 7px 14px; border-radius: 7px; cursor: pointer; font-size: 13px;
-}
-.btn-secondary:hover { background: #f6f8fa; }
-.btn-secondary.dark { background: #eef1f4; border-color: #e0e5ea; }
-
-.hint { font-size: 11.5px; color: var(--muted); line-height: 1.6; }
+.ai-result.hide { display: none; }
+.ai-summary { font-size: 12.5px; line-height: 1.6; color: var(--ink-2); }
+.ai-meta { display: flex; align-items: center; gap: 8px; font-size: 11.5px; }
+.conf { padding: 2px 7px; border-radius: 999px; background: #eef2f7; color: var(--ink-2); }
+.conf.high { background: #e6f5ec; color: #24734a; }
+.conf.mid { background: #fdf3e3; color: #97651a; }
+.conf.low { background: #fdecea; color: #a33; }
+.muted { color: var(--muted); }
+.warns { margin: 0; padding-left: 16px; font-size: 11.5px; color: var(--warn); line-height: 1.7; }
+.issues { font-size: 11.5px; color: var(--muted); }
+.issues summary { cursor: pointer; }
+.issues ul { margin: 4px 0 0; padding-left: 16px; line-height: 1.7; }
+.ai-error { color: var(--accent); font-size: 12.5px; line-height: 1.6; }
+.hint { font-size: 11.5px; color: var(--muted); line-height: 1.6; margin-top: 4px; }
 
 /* 题库 */
-.template-list { overflow-y: auto; flex: 1; padding-right: 2px; }
+.search {
+  width: 100%; border: 1px solid var(--line-2); border-radius: 7px;
+  padding: 7px 10px; font-size: 12.5px; outline: none; background: #fbfcfe;
+}
+.search:focus { border-color: var(--blue); background: #fff; }
+.lib-cats { overflow-y: auto; flex: 1; min-height: 0; margin: -2px -4px 0; padding: 0 4px; }
 .cat { margin-bottom: 10px; }
 .cat-h {
-  font-size: 10.5px; color: #97a1ac; letter-spacing: .6px;
-  padding: 2px 0 5px; border-bottom: 1px dashed #eef1f4; margin-bottom: 5px;
+  font-size: 10.5px; color: #98a4b1; letter-spacing: .5px;
+  padding: 3px 0 5px; border-bottom: 1px dashed #edf1f5; margin-bottom: 4px;
 }
-.template-item {
-  display: block; width: 100%; text-align: left; background: transparent;
-  border: none; padding: 6px 8px; border-radius: 6px; font-size: 13px;
-  color: #39424c; cursor: pointer; transition: background .12s, color .12s;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+.item {
+  display: block; width: 100%; text-align: left; background: none; border: none;
+  padding: 5.5px 8px; border-radius: 6px; font-size: 12.5px; color: #3c4855;
+  cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.template-item:hover { background: #f2f6fa; color: var(--blue-d); }
-.template-item.active { background: #e8f1f8; color: var(--blue-d); font-weight: 600; }
+.item:hover { background: #f3f7fb; color: var(--blue-d); }
+.item.on { background: #e9f1fa; color: var(--blue-d); font-weight: 600; }
 
-.current-name { font-size: 13px; color: var(--blue-d); font-weight: 600; line-height: 1.5; }
-
-/* 变体选择 */
+/* ---------- 图纸区 ---------- */
+.stage {
+  display: flex; flex-direction: column; min-width: 0; min-height: 0;
+  padding: 12px 14px 10px; gap: 10px;
+}
+.paper-wrap {
+  flex: 1; min-height: 0; position: relative;
+  background: #e9edf2;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 14px;
+  box-shadow: inset 0 1px 3px rgba(20, 30, 45, .06);
+}
+.paper {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+}
+.paper svg.dw {
+  background: #fff;
+  max-width: 100%; max-height: 100%;
+  width: auto; height: auto;
+  border-radius: 2px;
+  box-shadow: 0 6px 24px rgba(20, 30, 45, .13), 0 1px 3px rgba(20, 30, 45, .08);
+}
 .variant-bar {
-  position: absolute; left: 22px; top: 22px;
-  display: flex; gap: 6px; flex-wrap: wrap; max-width: 70%;
+  position: absolute; left: 22px; top: 20px;
+  display: flex; gap: 6px; flex-wrap: wrap; max-width: 72%;
 }
-.variant-bar.hidden { display: none; }
+.variant-bar.hide { display: none; }
 .chip {
-  background: rgba(255,255,255,.94); border: 1px solid #d8dfe6; color: #46515c;
-  padding: 4px 10px; border-radius: 999px; font-size: 12px; cursor: pointer;
+  background: rgba(255,255,255,.95); border: 1px solid #d5dde6; color: var(--ink-2);
+  padding: 4px 10px; border-radius: 999px; font-size: 11.5px; cursor: pointer;
   backdrop-filter: blur(4px);
 }
 .chip:hover { border-color: var(--blue); color: var(--blue); }
-.chip.on { background: var(--blue); color: #fff; border-color: var(--blue); }
-.ai-note { font-size: 12px; color: var(--muted); padding: 5px 10px; background: #fff; border-radius: 999px; border: 1px dashed #cfd8e0; }
+.chip.on { background: var(--blue); border-color: var(--blue); color: #fff; }
 
-/* 步骤 */
+.narration {
+  background: #fff; border: 1px solid var(--line); border-radius: 10px;
+  padding: 11px 14px; flex-shrink: 0;
+}
+.narr-head { display: flex; align-items: baseline; gap: 10px; }
+.narr-title { font-size: 14px; font-weight: 650; color: var(--blue-d); }
+.doc-title { font-size: 11.5px; color: var(--muted); margin-left: auto; }
+.narr-body { margin-top: 5px; font-size: 13px; line-height: 1.7; color: var(--ink-2); }
+.narr-body b { color: var(--ink); }
+
+.controls {
+  display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+}
+.speed { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--muted); margin-left: 4px; }
+.speed select {
+  border: 1px solid var(--line-2); border-radius: 6px; padding: 5px 6px;
+  font-size: 12px; color: var(--ink-2); background: #fff;
+}
+.progress { margin-left: auto; font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.progress b { color: var(--ink); }
+
+/* ---------- 右栏步骤 ---------- */
+.rail {
+  background: #fff; border-left: 1px solid var(--line);
+  display: flex; flex-direction: column; padding: 13px 10px 10px; gap: 9px;
+  min-height: 0;
+}
+.rail h2 { padding-left: 4px; }
 .step-list { overflow-y: auto; flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 2px; }
-.step-item {
-  display: flex; gap: 8px; align-items: baseline;
-  padding: 6px 8px; border-radius: 6px; cursor: pointer; color: #4a555f;
-  font-size: 12.5px; line-height: 1.45;
+.step {
+  display: flex; gap: 8px; align-items: flex-start; text-align: left;
+  background: none; border: none; padding: 7px 8px; border-radius: 7px;
+  font-size: 12.5px; color: #46525f; cursor: pointer; line-height: 1.45;
 }
-.step-item:hover { background: #f4f7fa; }
-.step-item .idx {
+.step:hover { background: #f4f7fa; }
+.step .n {
   flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%;
-  background: #eef2f6; color: #8b97a3; font-size: 10.5px;
-  display: inline-flex; align-items: center; justify-content: center;
-  transform: translateY(2px);
+  background: #eef2f7; color: #8b97a3; font-size: 10.5px;
+  display: inline-flex; align-items: center; justify-content: center; margin-top: 1px;
 }
-.step-item.done { color: #8b97a3; }
-.step-item.done .idx { background: #e6f4ec; color: #2e8b57; }
-.step-item.current { background: #e8f1f8; color: var(--blue-d); font-weight: 600; }
-.step-item.current .idx { background: var(--blue); color: #fff; }
+.step.done { color: #8b97a3; }
+.step.done .n { background: #e6f4ec; color: #2e8b57; }
+.step.cur { background: #e9f1fa; color: var(--blue-d); font-weight: 600; }
+.step.cur .n { background: var(--blue); color: #fff; }
 
-.step-title { font-size: 13.5px; font-weight: 600; color: var(--blue-d); }
-.step-desc {
-  font-size: 13px; line-height: 1.75; color: #3d4752;
-  background: #fafbfc; border: 1px solid #eef1f4; border-radius: 8px;
-  padding: 11px 12px; overflow-y: auto; flex: 1; min-height: 80px;
+.legend {
+  border-top: 1px solid var(--line); padding-top: 8px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 5px 8px; font-size: 10.5px; color: var(--muted);
 }
+.legend span { display: flex; align-items: center; gap: 5px; }
+.legend i { display: inline-block; width: 18px; height: 0; border-top: 2.2px solid #121820; }
+.legend i.dashed { border-top-style: dashed; border-top-width: 1.6px; }
+.legend i.center { border-top-style: dotted; border-top-width: 1.4px; }
+.legend i.dim { border-top: 1.2px solid #2f5d9e; }
 
-/* 底栏 */
-footer {
-  background: #fff; border-top: 1px solid var(--line);
-  padding: 9px 16px; display: flex; align-items: center; gap: 10px; flex-shrink: 0;
-}
-.btn-control {
-  background: #fff; border: 1px solid #dbe1e7; padding: 7px 15px;
-  border-radius: 7px; cursor: pointer; font-size: 13px; color: #39424c;
-  transition: all .12s;
-}
-.btn-control:hover:not(:disabled) { background: #f5f8fa; border-color: #c9d2da; }
-.btn-control:disabled { opacity: .38; cursor: not-allowed; }
-.btn-control.btn-primary { background: var(--blue); color: #fff; border-color: var(--blue); min-width: 92px; }
-.btn-control.btn-primary:hover:not(:disabled) { background: var(--blue-d); }
-.speed-control { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted); margin-left: 6px; }
-.speed-control select { padding: 4px 6px; border: 1px solid #dbe1e7; border-radius: 5px; color: #39424c; }
-.step-progress { margin-left: auto; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
-
-/* 弹窗 */
+/* ---------- 弹窗 / 提示 ---------- */
 .modal {
-  position: fixed; inset: 0; background: rgba(18,24,30,.42);
-  display: flex; align-items: center; justify-content: center; z-index: 100;
+  position: fixed; inset: 0; background: rgba(16, 24, 33, .42);
+  display: flex; align-items: center; justify-content: center; z-index: 50;
 }
-.modal.hidden { display: none; }
-.modal-content {
-  background: #fff; padding: 22px; border-radius: 12px; width: 420px; max-width: 92%;
-  box-shadow: 0 18px 50px rgba(0,0,0,.2);
+.modal.hide { display: none; }
+.modal-box {
+  background: #fff; border-radius: 12px; padding: 20px; width: 420px; max-width: 92%;
+  box-shadow: 0 20px 60px rgba(10, 18, 28, .28);
 }
-.modal-content h2 { font-size: 17px; margin-bottom: 6px; }
-.modal-content label { display: block; font-size: 12px; color: var(--muted); margin: 12px 0 4px; }
-.modal-content input {
-  width: 100%; padding: 8px 10px; border: 1px solid #dbe1e7;
-  border-radius: 7px; font-size: 13px; outline: none;
+.modal-box h2 { font-size: 16px; margin-bottom: 4px; }
+.modal-box label { display: block; font-size: 11.5px; color: var(--muted); margin: 11px 0 4px; }
+.modal-box input {
+  width: 100%; border: 1px solid var(--line-2); border-radius: 7px;
+  padding: 8px 10px; font-size: 13px; outline: none;
 }
-.modal-content input:focus { border-color: var(--blue); }
-.modal-actions { display: flex; gap: 8px; margin-top: 18px; justify-content: flex-end; }
-.modal-actions .btn-primary { width: auto; }
+.modal-box input:focus { border-color: var(--blue); }
+.modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
 
-.overlay {
-  position: absolute; inset: 0; background: rgba(255,255,255,.86);
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 12px; z-index: 20; border-radius: 6px; font-size: 13px; color: var(--muted);
+.toast {
+  position: fixed; left: 50%; bottom: 26px; transform: translate(-50%, 10px);
+  background: #1d2733; color: #fff; font-size: 12.5px; padding: 8px 14px;
+  border-radius: 8px; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s;
+  z-index: 60; max-width: 70%;
 }
-.overlay.hidden { display: none; }
-.spinner {
-  width: 34px; height: 34px; border: 3px solid #e3e8ee; border-top-color: var(--blue);
-  border-radius: 50%; animation: spin .8s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+.toast.err { background: #8d2f28; }
+.toast.ok { background: #215c42; }
 
-@media (max-width: 1100px) {
-  .sidebar { width: 190px; }
-  .sidebar.right { width: 230px; }
+@media (max-width: 1180px) {
+  .layout { grid-template-columns: 260px minmax(0, 1fr) 208px; }
+}
+@media (max-width: 940px) {
+  .layout { grid-template-columns: 240px minmax(0, 1fr); }
+  .rail { display: none; }
 }
   </style>
 </head>
 <body>
-  <header>
+  <header class="bar">
     <div class="brand">
-      <span class="logo">▱</span>
-      <div>
-        <h1>机械制图过程演示</h1>
-        <p class="sub">点线面投影 · 三视图 · 截交相贯 · 组合体 · 轴测图 · 几何作图</p>
+      <span class="mark">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+          <path d="M3 20h18M6 20V8l6-4 6 4v12M10 20v-5h4v5"/>
+        </svg>
+      </span>
+      <div class="brand-txt">
+        <h1>机械制图 · 分步绘制</h1>
+        <p>画法几何 / 三视图 / 截交相贯 / 几何作图</p>
       </div>
     </div>
-    <button id="btn-settings" class="btn-secondary">⚙ API 设置</button>
+    <div class="bar-right">
+      <span id="mode-tag" class="tag">内置题库</span>
+      <button id="btn-svg" class="btn ghost" title="导出矢量图">SVG</button>
+      <button id="btn-png" class="btn ghost" title="导出图片">PNG</button>
+      <button id="btn-settings" class="btn">⚙ 设置</button>
+    </div>
   </header>
 
-  <main>
-    <aside class="sidebar">
-      <div class="panel">
-        <h3>上传题目照片</h3>
+  <main class="layout">
+    <aside class="side">
+      <section class="card">
+        <h2>识别题目</h2>
+        <div id="drop" class="drop">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+            <path d="M12 16V4m0 0L7 9m5-5 5 5M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>
+          </svg>
+          <strong>上传题目照片</strong>
+          <span>AI 判断题型、读尺寸，拆成作图步骤</span>
+        </div>
         <input type="file" id="file-input" accept="image/*" hidden>
-        <button id="btn-upload" class="btn-primary">📷 拍照 / 上传题目</button>
-        <p class="hint">AI 识别题型与尺寸，自动生成作图步骤</p>
-      </div>
+        <div id="ai-status" class="ai-status"></div>
+        <div id="ai-result" class="ai-result hide"></div>
+      </section>
 
-      <div class="panel grow">
-        <h3>题型库</h3>
-        <div id="template-list" class="template-list"></div>
-      </div>
-
-      <div class="panel last">
-        <h3>当前题目</h3>
-        <div id="current-part-name" class="current-name">—</div>
-      </div>
+      <section class="card grow">
+        <h2>题型库</h2>
+        <input id="lib-search" class="search" placeholder="搜索题型…">
+        <div id="lib-cats" class="lib-cats"></div>
+      </section>
     </aside>
 
-    <section class="canvas-area">
-      <canvas id="canvas"></canvas>
-      <div id="variant-bar" class="variant-bar hidden"></div>
-      <div id="overlay-loading" class="overlay hidden">
-        <div class="spinner"></div>
-        <p>AI 正在识图...</p>
+    <section class="stage">
+      <div class="paper-wrap">
+        <div id="paper" class="paper"></div>
+        <div id="variant-bar" class="variant-bar hide"></div>
+      </div>
+      <div class="narration">
+        <div class="narr-head">
+          <span id="step-title" class="narr-title">—</span>
+          <span id="doc-title" class="doc-title"></span>
+        </div>
+        <p id="step-desc" class="narr-body">选择左侧题型，或上传题目照片</p>
+      </div>
+      <div class="controls">
+        <button id="btn-prev" class="btn" disabled>⏮ 上一步</button>
+        <button id="btn-play" class="btn primary" disabled>▶ 播放</button>
+        <button id="btn-next" class="btn" disabled>下一步 ⏭</button>
+        <button id="btn-reset" class="btn ghost" title="回到第一步">↺</button>
+        <label class="speed">速度
+          <select id="speed-select">
+            <option value="0.6">0.6x</option>
+            <option value="1" selected>1x</option>
+            <option value="1.8">1.8x</option>
+            <option value="3">3x</option>
+          </select>
+        </label>
+        <span class="progress"><b id="step-current">0</b> / <span id="step-total">0</span></span>
       </div>
     </section>
 
-    <aside class="sidebar right">
-      <div class="panel">
-        <h3>作图步骤</h3>
-        <div id="step-list" class="step-list"></div>
-      </div>
-      <div class="panel grow">
-        <h3>本步讲解</h3>
-        <div id="step-title" class="step-title">—</div>
-        <div id="step-desc" class="step-desc">选择一个题型开始</div>
+    <aside class="rail">
+      <h2>绘图步骤</h2>
+      <div id="step-list" class="step-list"></div>
+      <div class="legend">
+        <span><i class="l thick"></i>可见轮廓</span>
+        <span><i class="l dashed"></i>不可见</span>
+        <span><i class="l center"></i>中心线</span>
+        <span><i class="l dim"></i>尺寸</span>
       </div>
     </aside>
   </main>
 
-  <footer>
-    <button id="btn-prev" class="btn-control" disabled>⏮ 上一步</button>
-    <button id="btn-play" class="btn-control btn-primary" disabled>▶ 播放</button>
-    <button id="btn-next" class="btn-control" disabled>下一步 ⏭</button>
-    <div class="speed-control">
-      <label>速度</label>
-      <select id="speed-select">
-        <option value="0.5">0.5x</option>
-        <option value="1" selected>1x</option>
-        <option value="2">2x</option>
-        <option value="3">3x</option>
-      </select>
-    </div>
-    <div class="step-progress"><span id="step-current">0</span> / <span id="step-total">0</span></div>
-  </footer>
-
-  <div id="settings-modal" class="modal hidden">
-    <div class="modal-content">
-      <h2>API 设置</h2>
-      <p class="hint">API Key 只保存在浏览器本地，不会上传到任何服务器。</p>
+  <div id="settings-modal" class="modal hide">
+    <div class="modal-box">
+      <h2>识别模型设置</h2>
+      <p class="hint">需要支持图片输入的 OpenAI 兼容接口。Key 只存在浏览器本地。</p>
       <label>API Base URL</label>
-      <input type="text" id="cfg-baseurl" placeholder="https://api.openai.com/v1" value="https://api.openai.com/v1">
+      <input id="cfg-baseurl" type="text" placeholder="https://api.openai.com/v1" value="https://api.openai.com/v1">
       <label>API Key</label>
-      <input type="password" id="cfg-apikey" placeholder="sk-...">
-      <label>模型名称（需支持图片输入）</label>
-      <input type="text" id="cfg-model" placeholder="gpt-4o" value="gpt-4o">
+      <input id="cfg-apikey" type="password" placeholder="sk-...">
+      <label>模型</label>
+      <input id="cfg-model" type="text" placeholder="gpt-4o" value="gpt-4o">
       <div class="modal-actions">
-        <button id="btn-cancel-settings" class="btn-secondary dark">取消</button>
-        <button id="btn-save-settings" class="btn-primary">保存</button>
+        <button id="btn-cancel-settings" class="btn ghost">取消</button>
+        <button id="btn-save-settings" class="btn primary">保存</button>
       </div>
     </div>
   </div>
+
+  <div id="toast" class="toast"></div>
   <script>
   // ===== js/config.js =====
 const AppConfig = {
@@ -487,7 +576,7 @@ const Paper = (() => {
     if (e.t === 'arc') return arcPts(e.c, e.r, e.a0, e.a1)
     if (e.t === 'dot') return [e.p]
     if (e.t === 'text') {
-      const n = (e.s || '').length * (e.size || 3) * 0.55
+      const n = (e.s || '').length * (e.size || 3) * 0.72
       const w = e.anchor === 'start' ? [0, n] : e.anchor === 'end' ? [-n, 0] : [-n / 2, n / 2]
       return [[e.p[0] + w[0], e.p[1] - 1], [e.p[0] + w[1], e.p[1] + 1]]
     }
@@ -502,8 +591,87 @@ const Paper = (() => {
     return { x0, y0, x1, y1, w: x1 - x0, h: y1 - y0 }
   }
 
+  /* ---------- 通用尺寸标注（对齐 / 水平 / 竖直，对应 DrawingDoc.dimension） ----------
+   * 规则参考 GB/T 4457.4 / GB/T 16675.2：
+   * 尺寸界线从轮廓外留 gap 起，超出尺寸线 extend；箭头为实心三角形；数字写在尺寸线上方且字头朝上。
+   */
+  function dimPrim(spec) {
+    const {
+      from, to, offset = 12, orientation = 'aligned', text: txt,
+      arrow = 'both', gap = 1.6, extend = 2.4, arrowLen = 3.2, arrowW = 1.1, textGap = 3.2,
+      size = 3.0, k = 1,
+    } = spec
+    const G = gap * k, EX = extend * k, AL = arrowLen * k, AW = arrowW * k, TG = textGap * k
+    let dir
+    if (orientation === 'horizontal') dir = [1, 0]
+    else if (orientation === 'vertical') dir = [0, 1]
+    else {
+      const dx = to[0] - from[0], dy = to[1] - from[1], L = Math.hypot(dx, dy) || 1
+      dir = [dx / L, dy / L]
+    }
+    const sign = offset >= 0 ? 1 : -1
+    const dist = Math.abs(offset)
+    const n = [-dir[1] * sign, dir[0] * sign]          // 左法向
+    let d1, d2
+    if (orientation === 'horizontal') {
+      const y = from[1] + n[1] * dist
+      d1 = [from[0], y]; d2 = [to[0], y]
+    } else if (orientation === 'vertical') {
+      const x = from[0] + n[0] * dist
+      d1 = [x, from[1]]; d2 = [x, to[1]]
+    } else {
+      d1 = [from[0] + n[0] * dist, from[1] + n[1] * dist]
+      d2 = [to[0] + n[0] * dist, to[1] + n[1] * dist]
+    }
+    if ((d2[0] - d1[0]) * dir[0] + (d2[1] - d1[1]) * dir[1] < 0) { const t = d1; d1 = d2; d2 = t }
+
+    const els = []
+    if (dist > 0.4) {
+      ;[from, to].forEach(p => {
+        els.push(line([p[0] + n[0] * G, p[1] + n[1] * G],
+          [p[0] + n[0] * (dist + EX), p[1] + n[1] * (dist + EX)],
+          'thin', { color: C.dim, noAnim: true }))
+      })
+    }
+    els.push(line(d1, d2, 'dim', { color: C.dim, noAnim: true }))
+    const tri = (tip, toward) => {
+      const vx = toward[0] - tip[0], vy = toward[1] - tip[1], L = Math.hypot(vx, vy) || 1
+      const ux = vx / L, uy = vy / L, bx = tip[0] + ux * AL, by = tip[1] + uy * AL
+      return poly([tip, [bx - uy * AW / 2, by + ux * AW / 2], [bx + uy * AW / 2, by - ux * AW / 2]],
+        'dim', true, { fill: true, color: C.dim, noAnim: true, w: 0.12 })
+    }
+    if (arrow === 'both' || arrow === 'start') els.push(tri(d1, d2))
+    if (arrow === 'both' || arrow === 'end') els.push(tri(d2, d1))
+
+    const mid = [(d1[0] + d2[0]) / 2, (d1[1] + d2[1]) / 2]
+    let a = Math.atan2(d2[1] - d1[1], d2[0] - d1[0])
+    while (a > Math.PI / 2) a -= Math.PI
+    while (a < -Math.PI / 2) a += Math.PI
+    if (Math.abs(a - Math.PI / 2) < 1e-6) a = -Math.PI / 2
+    const val = txt != null && txt !== '' ? txt : String(Math.round(Math.hypot(d2[0] - d1[0], d2[1] - d1[1]) * 10) / 10)
+    els.push(text([mid[0] + n[0] * TG, mid[1] + n[1] * TG], val,
+      { size, color: C.dim, rot: a, noAnim: true }))
+    return { els, measured: Math.hypot(d2[0] - d1[0], d2[1] - d1[1]) }
+  }
+
+  // 平移整组图元
+  function translate(els, dx, dy) {
+    const mv = p => p ? [p[0] + dx, p[1] + dy] : p
+    return els.map(e => {
+      const c = Object.assign({}, e)
+      if (c.a) c.a = mv(c.a)
+      if (c.b) c.b = mv(c.b)
+      if (c.c) c.c = mv(c.c)
+      if (c.p) c.p = mv(c.p)
+      if (c.tip) c.tip = mv(c.tip)
+      if (c.from) c.from = mv(c.from)
+      if (c.pts) c.pts = c.pts.map(mv)
+      return c
+    })
+  }
+
   return {
-    ST, C, P, line, poly, circle, arc, dot, text, arrow, arcPts, bbox,
+    ST, C, P, line, poly, circle, arc, dot, text, arrow, arcPts, bbox, dimPrim, translate,
     dimH, dimV, dimAligned, dimR, dimD, leader, pointMark, eps: 1e-9,
   }
 })()
@@ -1066,7 +1234,7 @@ const Views = (() => {
       })
       names.forEach(n => {
         const m = metas[n]
-        const off = { front: [1.6, 1.5], top: [1.6, 1.5], left: [1.6, 1.5] }[n]
+        const off = { front: [2.4, 2.0], top: [2.4, 2.0], left: [2.4, 2.0] }[n]
         parts[n] = Paper.pointMark(m.pos, m.label, {
           color: o.color || Paper.C.pick, hidden: !m.vis, off, size: 3.2,
         })
@@ -1737,8 +1905,8 @@ const Templates2D = (() => {
     ]
     // 6 尺寸
     const s6 = [
-      ...Paper.dimV(0, TOP, -30, '85', { from: -46 }),
-      ...Paper.dimV(-13, 0, -44, '13', { from: -46 }),
+      ...Paper.dimV(0, TOP, -30, '85', { from: -11 }),
+      ...Paper.dimV(-13, 0, -42, '13', { from: -33 }),
       ...Paper.dimH(-PY, PY, TOP + 9, 'Ø16', { from: TOP }),
       ...Paper.dimH(-SX, SX, SHOULDER - 14, 'Ø20', { from: SHOULDER - 10 }),
       ...Paper.dimV(SHOULDER, TOP, 18, '16', { from: PY }),
@@ -1959,380 +2127,696 @@ const Templates2D = (() => {
   return { T, list: () => Object.values(T), get: id => T[id], def }
 })()
 
-  // ===== js/engine.js =====
-/* Engine — Canvas 渲染器
- * 把 Paper 元素按图幅自适应缩放画出，支持逐步绘制动画
+  // ===== js/drawingdoc.js =====
+/* DrawingDoc — 大模型图纸契约
+ * 结构：{version, meta:{title,width,height,summary,confidence,standard,unit}, warnings[], steps:[{id,title,narration,primitives[]}]}
+ * 图元：line / circle / arc / dimension / text / point
+ * 坐标：SVG 用户坐标（y 向下）。转成 Paper 图纸坐标（y 向上）时统一翻转。
  */
-class DrawEngine {
-  constructor(canvas) {
-    this.canvas = canvas
-    this.ctx = canvas.getContext('2d')
-    this.dpr = Math.min(window.devicePixelRatio || 1, 2)
-    this.scale = 1
-    this.ox = 0
-    this.oy = 0
-    this.resize()
-    window.addEventListener('resize', () => { this.resize(); this._redraw() })
+const DrawingDoc = (() => {
+  const CANVAS = { w: 920, h: 660 }
+  const PAD = 34
+
+  const LINE_ALIAS = {
+    thick: 'thick', thin: 'thin', dashed: 'dashed', center: 'center',
+    粗实线: 'thick', 细实线: 'thin', 细虚线: 'dashed', 虚线: 'dashed',
+    点画线: 'center', 细点画线: 'center', 中心线: 'center',
+    solid: 'thick', hidden: 'dashed', dashdot: 'center',
+  }
+  const STYLE = { thick: 'solid', thin: 'thin', dashed: 'hidden', center: 'center' }
+
+  const num = v => {
+    if (typeof v === 'number' && Number.isFinite(v)) return v
+    if (typeof v === 'string' && v.trim() !== '' && Number.isFinite(Number(v))) return Number(v)
+    return null
+  }
+  const str = v => (typeof v === 'string' && v.trim() ? v.trim() : undefined)
+  const rec = v => v && typeof v === 'object' && !Array.isArray(v)
+
+  /* 从模型输出里抠出 JSON：容忍围栏、前后废话、多重包装 */
+  function parseLoose(raw) {
+    if (rec(raw)) return raw
+    if (typeof raw !== 'string') return null
+    let s = raw.trim()
+    s = s.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim()
+    const start = s.indexOf('{')
+    const end = s.lastIndexOf('}')
+    if (start === -1 || end <= start) return null
+    s = s.slice(start, end + 1)
+    try { return JSON.parse(s) } catch { /* 常见：中文引号、尾逗号 */ }
+    try {
+      return JSON.parse(s.replace(/[“”]/g, '"').replace(/,\s*([}\]])/g, '$1'))
+    } catch { return null }
   }
 
-  resize() {
-    const r = this.canvas.getBoundingClientRect()
-    this.W = Math.max(320, r.width || 900)
-    this.H = Math.max(240, r.height || 560)
-    this.canvas.width = this.W * this.dpr
-    this.canvas.height = this.H * this.dpr
-    this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0)
-    this._redraw()
-  }
+  /* ---------- 归一化：能修就修，修不了才丢 ---------- */
+  function normalize(raw, opts = {}) {
+    const issues = []
+    const payload = parseLoose(raw)
+    if (!rec(payload)) return { doc: null, issues: [{ level: 'error', msg: '无法从返回内容中解析出 JSON' }] }
 
-  setDrawing(drawing) {
-    this.drawing = drawing
-    const all = []
-    drawing.steps.forEach(s => all.push(...s.els))
-    const bb = Paper.bbox(all)
-    const M = 24
-    const sw = Math.max(10, bb.w), sh = Math.max(10, bb.h)
-    this.scale = Math.min((this.W - 2 * M) / sw, (this.H - 2 * M) / sh, 9.5)
-    this.ox = (this.W - bb.w * this.scale) / 2 - bb.x0 * this.scale
-    this.oy = (this.H + bb.h * this.scale) / 2 + bb.y0 * this.scale
-    this._redraw()
-  }
+    const metaRaw = rec(payload.meta) ? payload.meta : {}
+    const W = num(metaRaw.width) || opts.width || CANVAS.w
+    const H = num(metaRaw.height) || opts.height || CANVAS.h
+    const clampX = v => Math.max(PAD, Math.min(W - PAD, v))
+    const clampY = v => Math.max(PAD, Math.min(H - PAD, v))
 
-  setState(state) { this.state = state; this._redraw() }
-
-  _redraw() {
-    if (this.drawing) this.draw(this.state || { step: 0, t: 1 })
-    else {
-      const ctx = this.ctx
-      ctx.fillStyle = '#fff'
-      ctx.fillRect(0, 0, this.W, this.H)
+    if (!Array.isArray(payload.steps) || !payload.steps.length) {
+      return { doc: null, issues: [{ level: 'error', msg: 'steps 缺失或为空' }] }
     }
-  }
 
-  tx(p) { return [this.ox + p[0] * this.scale, this.oy - p[1] * this.scale] }
+    const ids = new Set()
+    const uid = (id, fb) => {
+      let v = id && !ids.has(id) ? id : fb
+      let n = 2
+      while (ids.has(v)) v = `${fb}-${n++}`
+      ids.add(v)
+      return v
+    }
+    const clampPt = (p, path) => {
+      if (!rec(p)) { issues.push({ level: 'error', msg: `${path} 坐标缺失` }); return null }
+      const x = num(p.x), y = num(p.y)
+      if (x === null || y === null) { issues.push({ level: 'error', msg: `${path} 坐标非法` }); return null }
+      const cx = clampX(x), cy = clampY(y)
+      if (cx !== x || cy !== y) issues.push({ level: 'warn', msg: `${path} 超出画布，已夹取`, fixed: true })
+      return { x: cx, y: cy }
+    }
 
-  draw(state) {
-    const ctx = this.ctx
-    ctx.save()
-    ctx.fillStyle = '#fff'
-    ctx.fillRect(0, 0, this.W, this.H)
-    ctx.strokeStyle = '#e2e6ea'
-    ctx.lineWidth = 1
-    ctx.strokeRect(10.5, 10.5, this.W - 21, this.H - 21)
-
-    const steps = this.drawing.steps
-    const si = Math.min(state.step, steps.length - 1)
-    for (let k = 0; k <= si; k++) {
-      const st = steps[k]
-      const n = st.els.length
-      const isCurrent = k === si
-      const prog = isCurrent ? state.t : 1
-      st.els.forEach((el, i) => {
-        let local = 1
-        if (isCurrent && n > 1) {
-          const start = (i / n) * 0.62
-          local = Math.max(0, Math.min(1, (prog - start) / 0.38))
+    const steps = []
+    let dropped = 0
+    payload.steps.slice(0, 14).forEach((rs, si) => {
+      if (!rec(rs)) { dropped++; return }
+      const sid = uid(str(rs.id), `s${si + 1}`)
+      const prims = []
+      const list = Array.isArray(rs.primitives) ? rs.primitives : []
+      list.slice(0, 20).forEach((rp, pi) => {
+        if (!rec(rp)) return
+        const kind = str(rp.kind)
+        const id = uid(str(rp.id), `${sid}-e${pi + 1}`)
+        const lt = LINE_ALIAS[(str(rp.lineType) || 'thick').toLowerCase()] || LINE_ALIAS[str(rp.lineType)] || 'thick'
+        if (kind === 'line') {
+          const x1 = num(rp.x1), y1 = num(rp.y1), x2 = num(rp.x2), y2 = num(rp.y2)
+          if ([x1, y1, x2, y2].some(v => v === null)) { issues.push({ level: 'warn', msg: `第${si + 1}步 直线端点非法，已丢弃` }); return }
+          if (Math.hypot(x2 - x1, y2 - y1) < 2) { issues.push({ level: 'warn', msg: `第${si + 1}步 零长度直线，已丢弃` }); return }
+          prims.push({ id, kind, lineType: lt, x1: clampX(x1), y1: clampY(y1), x2: clampX(x2), y2: clampY(y2) })
+        } else if (kind === 'circle') {
+          const cx = num(rp.cx), cy = num(rp.cy), r = num(rp.r)
+          if (cx === null || cy === null || r === null || r <= 0) { issues.push({ level: 'warn', msg: `第${si + 1}步 圆参数非法，已丢弃` }); return }
+          prims.push({ id, kind, lineType: lt, cx: clampX(cx), cy: clampY(cy), r: Math.min(r, W) })
+        } else if (kind === 'arc') {
+          const cx = num(rp.cx), cy = num(rp.cy), r = num(rp.r)
+          let a0 = num(rp.startAngle), a1 = num(rp.endAngle)
+          if (cx === null || cy === null || r === null || r <= 0) { issues.push({ level: 'warn', msg: `第${si + 1}步 圆弧参数非法，已丢弃` }); return }
+          if (a0 === null) a0 = 0
+          if (a1 === null) a1 = a0 + 180
+          if (Math.abs(a1 - a0) < 0.5) { issues.push({ level: 'warn', msg: `第${si + 1}步 圆弧起止角相同，已丢弃` }); return }
+          prims.push({ id, kind, lineType: lt, cx: clampX(cx), cy: clampY(cy), r: Math.min(r, W), startAngle: a0, endAngle: a1 })
+        } else if (kind === 'dimension') {
+          const from = clampPt(rp.from, `第${si + 1}步 尺寸起点`)
+          const to = clampPt(rp.to, `第${si + 1}步 尺寸终点`)
+          if (!from || !to) return
+          if (Math.hypot(to.x - from.x, to.y - from.y) < 3) { issues.push({ level: 'warn', msg: `第${si + 1}步 尺寸两点重合，已丢弃` }); return }
+          const ori = ['aligned', 'horizontal', 'vertical'].includes(str(rp.orientation)) ? str(rp.orientation) : 'aligned'
+          let text = str(rp.text)
+          if (!text) {
+            const v = ori === 'horizontal' ? Math.abs(to.x - from.x) : ori === 'vertical' ? Math.abs(to.y - from.y) : Math.hypot(to.x - from.x, to.y - from.y)
+            text = String(Math.round(v * 10) / 10)
+            issues.push({ level: 'info', msg: `第${si + 1}步 尺寸缺文字，已按测量值补全`, fixed: true })
+          }
+          prims.push({ id, kind, from, to, offset: num(rp.offset) ?? 16, orientation: ori, text, arrow: str(rp.arrow) || 'both' })
+        } else if (kind === 'text' || kind === 'label') {
+          const p = clampPt(rp, `第${si + 1}步 文字`)
+          const s = str(rp.text) || str(rp.s)
+          if (!p || !s) { issues.push({ level: 'warn', msg: `第${si + 1}步 文字内容为空，已丢弃` }); return }
+          prims.push({ id, kind: 'text', p, text: s, size: num(rp.size) || 18, anchor: str(rp.anchor) || 'start', color: str(rp.color) })
+        } else if (kind === 'point') {
+          const p = clampPt(rp, `第${si + 1}步 点`)
+          if (!p) return
+          prims.push({ id, kind: 'point', p, color: str(rp.color) })
+        } else {
+          issues.push({ level: 'warn', msg: `第${si + 1}步 未知图元「${kind || 'undefined'}」，已跳过` })
         }
-        if (local <= 0) return
-        this.drawEl(el, local)
       })
+      if (!prims.length) { dropped++; issues.push({ level: 'warn', msg: `第${si + 1}步无有效图元，已跳过` }); return }
+      const title = str(rs.title) || `第 ${si + 1} 步`
+      const narration = str(rs.narration) || str(rs.desc) || ''
+      if (!narration) issues.push({ level: 'info', msg: `第${si + 1}步缺少讲解` })
+      steps.push({ id: sid, title, narration, primitives: prims })
+    })
+
+    if (!steps.length) return { doc: null, issues: issues.concat([{ level: 'error', msg: '没有任何可渲染的步骤' }]) }
+
+    const confidence = num(metaRaw.confidence)
+    const warnings = (Array.isArray(payload.warnings) ? payload.warnings : []).map(str).filter(Boolean).slice(0, 8)
+    const doc = {
+      version: '1.0',
+      meta: {
+        title: str(metaRaw.title) || '未命名图纸',
+        width: W, height: H,
+        summary: str(metaRaw.summary) || '',
+        standard: str(metaRaw.standard) || 'GB/T 4457.4',
+        unit: 'mm',
+        confidence: confidence === null ? null : Math.max(0, Math.min(1, confidence)),
+      },
+      warnings, steps,
     }
-    ctx.restore()
+    if (dropped) issues.push({ level: 'info', msg: `共跳过 ${dropped} 个无效步骤` })
+    return { doc, issues }
   }
 
-  styleOf(el) {
-    const st = Paper.ST[el.st || 'solid'] || Paper.ST.solid
-    return { w: (el.w != null ? el.w : st.w) * this.scale, dash: (el.dash || st.dash).map(d => d * this.scale) }
-  }
-
-  drawEl(el, p) {
-    const ctx = this.ctx
-    const { w, dash } = this.styleOf(el)
-    ctx.save()
-    ctx.lineWidth = Math.max(0.7, w)
-    ctx.setLineDash(dash)
-    ctx.lineCap = 'round'
-    ctx.lineJoin = 'round'
-    ctx.strokeStyle = el.color || (el.st === 'hidden' ? '#4a4a4a' : '#1a1a1a')
-    ctx.fillStyle = el.color || '#1a1a1a'
-    if (el.st === 'center') ctx.strokeStyle = el.color || '#5a6570'
-
-    if (el.t === 'line') {
-      const a = this.tx(el.a), b = this.tx(el.b)
-      ctx.beginPath(); ctx.moveTo(a[0], a[1])
-      ctx.lineTo(a[0] + (b[0] - a[0]) * p, a[1] + (b[1] - a[1]) * p)
-      ctx.stroke()
-    } else if (el.t === 'poly') {
-      const pts = el.pts.map(q => this.tx(q))
-      if (pts.length < 2) { ctx.restore(); return }
-      const total = polyLen(pts)
-      let target = total * p, acc = 0
-      ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1])
-      for (let i = 1; i < pts.length; i++) {
-        const seg = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1])
-        if (acc + seg <= target) { ctx.lineTo(pts[i][0], pts[i][1]); acc += seg }
-        else {
-          const r = seg > 0 ? (target - acc) / seg : 1
-          ctx.lineTo(pts[i - 1][0] + (pts[i][0] - pts[i - 1][0]) * r, pts[i - 1][1] + (pts[i][1] - pts[i - 1][1]) * r)
-          break
+  /* ---------- 转成渲染场景（Paper 坐标，y 向上） ---------- */
+  function toScene(doc) {
+    const H = doc.meta.height
+    const K = doc.meta.width / 200
+    const Y = y => H - y
+    const P = ([x, y]) => [x, Y(y)]
+    const steps = doc.steps.map(s => {
+      const els = []
+      s.primitives.forEach(p => {
+        if (p.kind === 'line') {
+          els.push(Paper.line(P([p.x1, p.y1]), P([p.x2, p.y2]), STYLE[p.lineType] || 'solid'))
+        } else if (p.kind === 'circle') {
+          els.push(Paper.circle(P([p.cx, p.cy]), p.r, STYLE[p.lineType] || 'solid'))
+        } else if (p.kind === 'arc') {
+          els.push(Paper.arc(P([p.cx, p.cy]), p.r, p.startAngle * Math.PI / 180, p.endAngle * Math.PI / 180, STYLE[p.lineType] || 'solid'))
+        } else if (p.kind === 'dimension') {
+          const r = Paper.dimPrim({
+            from: P([p.from.x, p.from.y]), to: P([p.to.x, p.to.y]),
+            offset: p.offset, orientation: p.orientation, text: p.text, arrow: p.arrow,
+            size: 15, k: K,
+          })
+          els.push(...r.els)
+        } else if (p.kind === 'text') {
+          els.push(Paper.text(P([p.p.x, p.p.y]), p.text, {
+            size: p.size, anchor: p.anchor, color: p.color || '#1a1f24', noAnim: false,
+          }))
+        } else if (p.kind === 'point') {
+          els.push(Paper.dot(P([p.p.x, p.p.y]), { r: 2.6, color: p.color || '#c0392b', noAnim: false }))
         }
-      }
-      if (el.closed && p >= 1) ctx.closePath()
-      if (el.fill) ctx.fill(); else ctx.stroke()
-    } else if (el.t === 'circle') {
-      const c = this.tx(el.c)
-      ctx.beginPath()
-      ctx.arc(c[0], c[1], Math.max(1, el.r * this.scale), -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * p)
-      ctx.stroke()
-    } else if (el.t === 'arc') {
-      const c = this.tx(el.c)
-      let a0 = el.a0, a1 = el.a1
-      while (a1 < a0) a1 += Math.PI * 2
-      ctx.beginPath()
-      ctx.arc(c[0], c[1], Math.max(1, el.r * this.scale), -a0, -(a0 + (a1 - a0) * p), true)
-      ctx.stroke()
-    } else if (el.t === 'dot') {
-      if (p < 0.5) { ctx.restore(); return }
-      const c = this.tx(el.p), r = Math.max(2, el.r * this.scale)
-      ctx.beginPath(); ctx.arc(c[0], c[1], r, 0, Math.PI * 2)
-      if (el.hollow) { ctx.fillStyle = '#fff'; ctx.fill(); ctx.stroke() }
-      else ctx.fill()
-    } else if (el.t === 'arrow') {
-      if (p < 0.4) { ctx.restore(); return }
-      const tip = this.tx(el.tip), from = this.tx(el.from)
-      const d = [tip[0] - from[0], tip[1] - from[1]], L = Math.hypot(d[0], d[1]) || 1
-      const u = [d[0] / L, d[1] / L], nn = [-u[1], u[0]]
-      const len = Math.min(L, 9), wid = 3.2
-      ctx.beginPath()
-      ctx.moveTo(tip[0], tip[1])
-      ctx.lineTo(tip[0] - u[0] * len + nn[0] * wid, tip[1] - u[1] * len + nn[1] * wid)
-      ctx.lineTo(tip[0] - u[0] * len - nn[0] * wid, tip[1] - u[1] * len - nn[1] * wid)
-      ctx.closePath(); ctx.fill()
-    } else if (el.t === 'text') {
-      if (p < 0.55) { ctx.restore(); return }
-      const c = this.tx(el.p)
-      let fs = el.size * this.scale
-      fs = Math.max(10.5, Math.min(30, fs))
-      ctx.font = `${el.italic ? 'italic ' : ''}${fs}px ${el.italic ? '"Times New Roman", "Songti SC", serif' : '"Segoe UI", "Microsoft YaHei", sans-serif'}`
-      ctx.textAlign = el.anchor === 'start' ? 'left' : el.anchor === 'end' ? 'right' : 'center'
-      ctx.textBaseline = 'middle'
-      if (el.rot) {
-        ctx.translate(c[0], c[1]); ctx.rotate(-el.rot)
-        ctx.fillText(el.s, 0, 0)
-      } else ctx.fillText(el.s, c[0], c[1])
+      })
+      return { title: s.title, desc: s.narration, els }
+    })
+    return {
+      title: doc.meta.title,
+      summary: doc.meta.summary,
+      confidence: doc.meta.confidence,
+      warnings: doc.warnings || [],
+      standard: doc.meta.standard,
+      unit: doc.meta.unit,
+      sheet: { w: doc.meta.width, h: doc.meta.height, frame: true, titleBlock: true },
+      steps,
+      mode: 'doc',
     }
-    ctx.restore()
+  }
+
+  /* 内置题库产物（Paper 元素）→ 同一套场景结构 */
+  function fromDraw(draw) {
+    const all = draw.steps.reduce((a, s) => a.concat(s.els), [])
+    const bb = Paper.bbox(all)
+    const m = 14, tb = 22
+    const dx = m - bb.x0, dy = m + tb - bb.y0
+    const title = draw.title.length > 12 ? draw.title.slice(0, 12) + '…' : draw.title
+    return {
+      title,
+      titleFull: draw.title,
+      steps: draw.steps.map(s => ({ title: s.title, desc: s.desc, els: Paper.translate(s.els, dx, dy) })),
+      sheet: { w: Math.max(120, bb.w + 2 * m), h: Math.max(90, bb.h + 2 * m + tb), frame: true, titleBlock: true },
+      standard: 'GB/T 4457.4', unit: 'mm',
+      warnings: [], confidence: null, summary: '', mode: 'template',
+    }
+  }
+
+  return { CANVAS, parseLoose, normalize, toScene, fromDraw }
+})()
+
+  // ===== js/render.js =====
+/* SvgRender — 图纸渲染器
+ * 输入 scene = {sheet:{w,h}, steps:[{title,desc,els}], title, ...}
+ * 输出内联 SVG：图框、标题栏、国标线型、按步生长的动画
+ */
+class SvgRender {
+  constructor(host) {
+    this.host = host
+    this.step = 0
+    this.scene = null
+  }
+
+  setScene(scene) {
+    this.scene = scene
+    this.step = 0
+    this.build()
+  }
+
+  showStep(i) { this.step = i; this.build() }
+
+  build() {
+    if (!this.scene) { this.host.innerHTML = ''; return }
+    this.host.innerHTML = SvgRender.buildSvg(this.scene, this.step)
+    this.svg = this.host.querySelector('svg')
+  }
+
+  static buildSvg(sc, stepIndex, opts = {}) {
+    const { w, h } = sc.sheet
+    const k = w / 200                                  // 线宽随图幅缩放
+    const pad = Math.min(w, h) * 0.028
+    const frame = { x: pad, y: pad, w: w - pad * 2, h: h - pad * 2 }
+    const tbW = Math.min(w * 0.32, w - pad * 2 - 10)
+    const tbH = Math.min(h * 0.11, h - pad * 2 - 10)
+    const tb = { x: frame.x + frame.w - tbW, y: frame.y + frame.h - tbH, w: tbW, h: tbH }
+
+    const SY = y => h - y
+    const parts = []
+    parts.push(`<svg class="dw" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${esc(sc.title || '')}">`)
+    parts.push(`<style>${SvgRender.CSS}</style>`)
+    parts.push(`<defs><pattern id="grid" width="${20 * k}" height="${20 * k}" patternUnits="userSpaceOnUse"><path d="M${20 * k} 0H0V${20 * k}" fill="none" stroke="#eef2f7" stroke-width="${Math.max(0.6, k * 0.4)}"/></pattern></defs>`)
+    parts.push(`<rect width="${w}" height="${h}" fill="#fff"/>`)
+    parts.push(`<rect x="${frame.x}" y="${frame.y}" width="${frame.w}" height="${frame.h}" fill="url(#grid)"/>`)
+    parts.push(`<rect x="${frame.x}" y="${frame.y}" width="${frame.w}" height="${frame.h}" fill="none" stroke="#121820" stroke-width="${Math.max(1, k * 0.55)}"/>`)
+
+    // 逐步铺开
+    sc.steps.forEach((st, si) => {
+      if (si > stepIndex) return
+      parts.push(SvgRender.renderStep(st, si, si === stepIndex && opts.animate !== false, h, k))
+    })
+
+    // 标题栏
+    if (sc.sheet.titleBlock) {
+      const titleStr = sc.title || '未命名图纸'
+      const cjk = /[\u4e00-\u9fa5]/g
+      const textW = (str, fs) => (String(str).match(cjk) || []).length * fs + (String(str).replace(cjk, '').length * 0.55 * fs)
+      const fs1 = Math.max(2.0 * k, Math.min(tbH * 0.34, (tbW - 14) / Math.max(1, textW(titleStr, 1))))
+      const fs2 = Math.max(1.7 * k, Math.min(tbH * 0.18, (tbW * 0.36) / 9))
+      parts.push(`<g font-family="'Segoe UI','Microsoft YaHei',sans-serif">
+        <rect x="${tb.x}" y="${tb.y}" width="${tb.w}" height="${tb.h}" fill="#fff" stroke="#121820" stroke-width="${Math.max(1, k * 0.5)}"/>
+        <line x1="${tb.x}" y1="${tb.y + tbH * 0.48}" x2="${tb.x + tb.w}" y2="${tb.y + tbH * 0.48}" stroke="#121820" stroke-width="${Math.max(0.8, k * 0.35)}"/>
+        <text x="${tb.x + 7}" y="${tb.y + tbH * 0.31}" font-size="${r(fs1)}" font-weight="600" fill="#121820">${esc(titleStr)}</text>
+        <text x="${tb.x + 7}" y="${tb.y + tbH * 0.78}" font-size="${r(fs2)}" fill="#5a6a80">${esc(sc.standard || 'GB/T 4457.4 — 线型')}</text>
+        <text x="${tb.x + tb.w - 7}" y="${tb.y + tbH * 0.78}" font-size="${r(fs2)}" fill="#5a6a80" text-anchor="end">单位 ${esc(sc.unit || 'mm')}</text>
+      </g>`)
+    }
+    parts.push('</svg>')
+    return parts.join('')
+  }
+
+  static renderStep(st, si, animate, h, k) {
+    const SY = y => h - y
+    const groups = { solid: [], hidden: [], center: [], thin: [], dim: [] }
+    const extras = []
+    let textIdx = 0
+
+    st.els.forEach((el, ei) => {
+      const key = el.st === 'hidden' ? 'hidden' : el.st === 'center' ? 'center' : el.st === 'thin' ? 'thin' : el.st === 'dim' ? 'dim' : 'solid'
+      if (el.t === 'line') {
+        groups[key].push(`M${r(el.a[0])} ${r(SY(el.a[1]))}L${r(el.b[0])} ${r(SY(el.b[1]))}`)
+      } else if (el.t === 'poly') {
+        if (!el.pts || el.pts.length < 2) return
+        let d = `M${r(el.pts[0][0])} ${r(SY(el.pts[0][1]))}`
+        for (let i = 1; i < el.pts.length; i++) d += `L${r(el.pts[i][0])} ${r(SY(el.pts[i][1]))}`
+        if (el.closed) d += 'Z'
+        if (el.fill) extras.push({ kind: 'fill', d, color: el.color || '#121820', ei })
+        else groups[key].push(d)
+      } else if (el.t === 'circle') {
+        const cx = el.c[0], cy = SY(el.c[1]), rr = el.r
+        groups[key].push(`M${r(cx - rr)} ${r(cy)}A${r(rr)} ${r(rr)} 0 1 0 ${r(cx + rr)} ${r(cy)}A${r(rr)} ${r(rr)} 0 1 0 ${r(cx - rr)} ${r(cy)}`)
+      } else if (el.t === 'arc') {
+        let a0 = el.a0, a1 = el.a1
+        while (a1 < a0) a1 += Math.PI * 2
+        const large = (a1 - a0) > Math.PI ? 1 : 0
+        const p0 = [el.c[0] + el.r * Math.cos(a0), SY(el.c[1] + el.r * Math.sin(a0))]
+        const p1 = [el.c[0] + el.r * Math.cos(a1), SY(el.c[1] + el.r * Math.sin(a1))]
+        groups[key].push(`M${r(p0[0])} ${r(p0[1])}A${r(el.r)} ${r(el.r)} 0 ${large} 0 ${r(p1[0])} ${r(p1[1])}`)
+      } else if (el.t === 'dot') {
+        extras.push({ kind: 'dot', cx: el.p[0], cy: SY(el.p[1]), r: Math.max(1.4, el.r * (k / 3)), color: el.color || '#c0392b', hollow: el.hollow, ei })
+      } else if (el.t === 'arrow') {
+        const tip = [el.tip[0], SY(el.tip[1])], from = [el.from[0], SY(el.from[1])]
+        const dx = tip[0] - from[0], dy = tip[1] - from[1], L = Math.hypot(dx, dy) || 1
+        const ux = dx / L, uy = dy / L
+        const len = Math.min(L, 2.8 * k), wid = 1.0 * k
+        extras.push({
+          kind: 'fill', ei,
+          d: `M${r(tip[0])} ${r(tip[1])}L${r(tip[0] - ux * len - uy * wid)} ${r(tip[1] - uy * len + ux * wid)}L${r(tip[0] - ux * len + uy * wid)} ${r(tip[1] - uy * len - ux * wid)}Z`,
+          color: el.color || '#121820',
+        })
+      } else if (el.t === 'text') {
+        const x = el.p[0], y = SY(el.p[1])
+        const anchor = el.anchor === 'start' ? 'start' : el.anchor === 'end' ? 'end' : 'middle'
+        const rot = el.rot ? ` transform="rotate(${(-el.rot * 180 / Math.PI).toFixed(2)} ${r(x)} ${r(y)})"` : ''
+        const fs = el.size || 3
+        const weight = el.weight || 400
+        extras.push({
+          kind: 'text', ei, delay: textIdx++,
+          html: `<text x="${r(x)}" y="${r(y)}" font-size="${r(fs)}" fill="${el.color || '#121820'}" text-anchor="${anchor}" dominant-baseline="middle" font-weight="${weight}"${rot}${el.italic ? ' font-style="italic"' : ''}>${esc(el.s)}</text>`,
+        })
+      }
+    })
+
+    const sw = { solid: 0.62 * k, hidden: 0.32 * k, center: 0.2 * k, thin: 0.18 * k, dim: 0.18 * k }
+    const dash = {
+      solid: '', hidden: `${3 * k} ${1.6 * k}`, center: `${10 * k} ${1.5 * k} ${1.4 * k} ${1.5 * k}`, thin: '', dim: '',
+    }
+
+    const out = [`<g data-step="${si}" class="step">`]
+    let gi = 0
+    Object.keys(groups).forEach(key => {
+      const d = groups[key].join('')
+      if (!d) return
+      const id = `mk-${si}-${key}`
+      const delay = animate ? gi * 80 : 0
+      gi++
+      if (animate) {
+        out.push(`<mask id="${id}" maskUnits="userSpaceOnUse" x="0" y="0" width="100%" height="100%">
+          <path d="${d}" fill="none" stroke="#fff" stroke-width="${sw[key] * 6 + 1}" stroke-linecap="round" class="rv" pathLength="1" style="animation-delay:${delay}ms"/>
+        </mask>`)
+      }
+      out.push(`<path d="${d}" fill="none" stroke="${key === 'dim' ? '#2f5d9e' : '#121820'}" stroke-width="${r(sw[key])}" stroke-linecap="round" stroke-linejoin="round"${dash[key] ? ` stroke-dasharray="${dash[key]}"` : ''}${animate ? ` mask="url(#${id})"` : ''}/>`)
+    })
+
+    extras.forEach((x, idx) => {
+      const delay = animate ? 260 + Math.min(6, idx) * 60 : 0
+      if (x.kind === 'text') {
+        out.push(x.html.replace('<text ', `<text class="${animate ? 'fi' : ''}" style="animation-delay:${delay}ms" `))
+      } else if (x.kind === 'dot') {
+        out.push(`<circle cx="${r(x.cx)}" cy="${r(x.cy)}" r="${r(x.r)}" fill="${x.hollow ? '#fff' : x.color}" stroke="${x.color}" stroke-width="${r(1.2 * k / 3)}" class="${animate ? 'fi' : ''}" style="animation-delay:${delay}ms"/>`)
+      } else {
+        out.push(`<path d="${x.d}" fill="${x.color}" class="${animate ? 'fi' : ''}" style="animation-delay:${delay}ms"/>`)
+      }
+    })
+    out.push('</g>')
+    return out.join('')
+  }
+
+  /* 导出：去掉动画，保留完整图形 */
+  static cleanSvg(svg) {
+    const clone = svg.cloneNode(true)
+    clone.querySelectorAll('.rv').forEach(el => { el.removeAttribute('class') })
+    clone.querySelectorAll('.fi').forEach(el => { el.removeAttribute('class'); el.style.animation = 'none'; el.style.opacity = '1' })
+    clone.querySelectorAll('mask').forEach(m => {
+      const id = m.id
+      clone.querySelectorAll(`[mask="url(#${id})"]`).forEach(el => el.removeAttribute('mask'))
+      m.remove()
+    })
+    return clone
+  }
+
+  async exportSvg(name) {
+    if (!this.scene) return
+    const full = this.fullSvg()
+    download(new Blob([full], { type: 'image/svg+xml;charset=utf-8' }), `${name || 'drawing'}.svg`)
+  }
+
+  fullSvg() {
+    // 先展开全部步骤再序列化
+    const keep = this.step
+    this.step = this.scene.steps.length - 1
+    this.build()
+    const svg = SvgRender.cleanSvg(this.svg)
+    svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+    const out = new XMLSerializer().serializeToString(svg)
+    this.step = keep
+    this.build()
+    return `<?xml version="1.0" encoding="UTF-8"?>\n${out}`
+  }
+
+  async exportPng(name, scale = 2) {
+    if (!this.scene) return
+    const { w, h } = this.scene.sheet
+    const src = this.fullSvg()
+    const img = new Image()
+    const url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(src)
+    await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = url })
+    const cv = document.createElement('canvas')
+    cv.width = w * scale; cv.height = h * scale
+    const ctx = cv.getContext('2d')
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, cv.width, cv.height)
+    ctx.drawImage(img, 0, 0, cv.width, cv.height)
+    const blob = await new Promise(r => cv.toBlob(r, 'image/png'))
+    download(blob, `${name || 'drawing'}.png`)
   }
 }
 
-function polyLen(pts) {
-  let s = 0
-  for (let i = 1; i < pts.length; i++) s += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1])
-  return s
+SvgRender.CSS = `
+.rv{stroke-dasharray:1;stroke-dashoffset:1;animation:rv 900ms cubic-bezier(.35,0,.25,1) forwards}
+@keyframes rv{to{stroke-dashoffset:0}}
+.fi{opacity:0;animation:fi 340ms ease-out forwards}
+@keyframes fi{to{opacity:1}}
+`
+
+const r = v => Math.round(v * 100) / 100
+const esc = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
+function download(blob, filename) {
+  const a = document.createElement('a')
+  const url = URL.createObjectURL(blob)
+  a.href = url; a.download = filename
+  document.body.appendChild(a); a.click(); a.remove()
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
   // ===== js/player.js =====
-/* Player — 步骤播放器 */
+/* Player — 按步回放（动画由 SVG/CSS 驱动，这里只管节奏与状态） */
 class Player {
-  constructor(engine, ui) {
-    this.engine = engine
+  constructor(render, ui) {
+    this.render = render
     this.ui = ui
+    this.scene = null
     this.steps = []
-    this.current = 0
-    this.t = 0
+    this.index = 0
     this.playing = false
     this.speed = 1
-    this.last = 0
-    this._raf = null
-    this._loop = this._loop.bind(this)
+    this._timer = null
     this.ui.btnPrev.onclick = () => this.prev()
     this.ui.btnNext.onclick = () => this.next()
     this.ui.btnPlay.onclick = () => this.toggle()
+    this.ui.btnReset.onclick = () => this.goTo(0)
     this.ui.speedSelect.onchange = e => { this.speed = parseFloat(e.target.value) }
   }
 
-  load(drawing) {
-    this.drawing = drawing
-    this.steps = drawing.steps
-    this.current = 0
-    this.t = 1
+  load(scene) {
+    this.scene = scene
+    this.steps = scene.steps
+    this.index = 0
     this.playing = false
-    this.engine.setDrawing(drawing)
-    this.renderStepList()
+    clearTimeout(this._timer)
+    this.render.setScene(scene)
+    this.render.showStep(0)
+    this.renderSteps()
     this.update()
-    this.engine.setState({ step: 0, t: 1 })
   }
 
-  renderStepList() {
+  renderSteps() {
     const box = this.ui.stepList
     box.innerHTML = ''
     this.steps.forEach((s, i) => {
-      const d = document.createElement('div')
-      d.className = 'step-item'
-      d.innerHTML = `<span class="idx">${i + 1}</span><span class="tt">${s.title.replace(/^\d+[.、]\s*/, '')}</span>`
-      d.onclick = () => this.jump(i)
-      box.appendChild(d)
+      const b = document.createElement('button')
+      b.className = 'step'
+      b.innerHTML = `<span class="n">${i + 1}</span><span class="t">${escapeHtml(s.title)}</span>`
+      b.onclick = () => this.goTo(i)
+      box.appendChild(b)
     })
   }
 
   update() {
-    const s = this.steps[this.current]
-    this.ui.stepCurrent.textContent = this.current + 1
+    const s = this.steps[this.index]
+    this.ui.stepCurrent.textContent = this.index + 1
     this.ui.stepTotal.textContent = this.steps.length
-    this.ui.stepDesc.textContent = s ? s.desc : '—'
     this.ui.stepTitle.textContent = s ? s.title : ''
-    this.ui.partName.textContent = this.drawing.title || ''
-    this.ui.btnPrev.disabled = this.current <= 0
-    this.ui.btnNext.disabled = this.current >= this.steps.length - 1
-    this.ui.btnPlay.disabled = this.steps.length === 0
-    this.ui.btnPlay.textContent = this.playing ? '⏸ 暂停' : (this.current >= this.steps.length - 1 ? '↻ 重播' : '▶ 播放')
+    this.ui.stepDesc.innerHTML = s ? richText(s.desc || '') : ''
+    this.ui.btnPrev.disabled = this.index <= 0
+    this.ui.btnNext.disabled = this.index >= this.steps.length - 1
+    this.ui.btnPlay.disabled = !this.steps.length
+    this.ui.btnPlay.textContent = this.playing ? '⏸ 暂停' : (this.index >= this.steps.length - 1 ? '↻ 重播' : '▶ 播放')
     ;[...this.ui.stepList.children].forEach((el, i) => {
-      el.classList.toggle('current', i === this.current)
-      el.classList.toggle('done', i < this.current)
+      el.classList.toggle('cur', i === this.index)
+      el.classList.toggle('done', i < this.index)
     })
-    const cur = this.ui.stepList.children[this.current]
+    const cur = this.ui.stepList.children[this.index]
     if (cur && cur.scrollIntoView) cur.scrollIntoView({ block: 'nearest' })
   }
 
-  jump(i) {
+  goTo(i) {
     this.playing = false
-    this.current = Math.max(0, Math.min(this.steps.length - 1, i))
-    this.t = 1
-    this.engine.setState({ step: this.current, t: 1 })
+    clearTimeout(this._timer)
+    this.index = Math.max(0, Math.min(this.steps.length - 1, i))
+    this.render.showStep(this.index)
     this.update()
   }
 
   next() {
-    if (this.current < this.steps.length - 1) {
-      this.current++
-      this.t = 1
-      this.engine.setState({ step: this.current, t: 1 })
+    if (this.index < this.steps.length - 1) {
+      this.playing = false
+      clearTimeout(this._timer)
+      this.index++
+      this.render.showStep(this.index)
       this.update()
     }
   }
 
   prev() {
-    this.playing = false
-    if (this.current > 0) this.current--
-    this.t = 1
-    this.engine.setState({ step: this.current, t: 1 })
-    this.update()
+    if (this.index > 0) {
+      this.playing = false
+      clearTimeout(this._timer)
+      this.index--
+      this.render.showStep(this.index)
+      this.update()
+    }
   }
 
   toggle() {
-    if (this.playing) { this.playing = false; this.update(); return }
-    if (this.current >= this.steps.length - 1) {
-      this.current = 0
-      this.t = 0
-      this.engine.setState({ step: 0, t: 0 })
+    if (this.playing) { this.playing = false; clearTimeout(this._timer); this.update(); return }
+    if (this.index >= this.steps.length - 1) {
+      this.index = 0
+      this.render.showStep(0)
     }
     this.playing = true
-    this.last = performance.now()
     this.update()
-    if (!this._raf) this._raf = requestAnimationFrame(this._loop)
+    this._advance()
   }
 
-  _loop(now) {
-    this._raf = null
-    if (!this.playing) return
-    const dt = Math.min(80, now - this.last)
-    this.last = now
-    const dur = 1600 / this.speed
-    this.t += dt / dur
-    if (this.t >= 1) {
-      this.t = 1
-      this.engine.setState({ step: this.current, t: 1 })
-      if (this.current < this.steps.length - 1) {
-        this.current++
-        this.t = 0
+  _advance() {
+    const dur = 900 / this.speed + 520
+    this._timer = setTimeout(() => {
+      if (!this.playing) return
+      if (this.index < this.steps.length - 1) {
+        this.index++
+        this.render.showStep(this.index)
         this.update()
-        this.engine.setState({ step: this.current, t: 0 })
-        this.last = performance.now()
+        this._advance()
       } else {
         this.playing = false
         this.update()
-        return
       }
-    } else {
-      this.engine.setState({ step: this.current, t: this.t })
-    }
-    this._raf = requestAnimationFrame(this._loop)
+    }, dur)
   }
+}
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
+function richText(t) {
+  return escapeHtml(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
 }
 
   // ===== js/llm.js =====
-/* LLM 识图：把题目照片映射到题型 + 参数 */
-class LLMRecognizer {
-  async recognize(imageFile) {
-    if (!AppConfig.hasApiKey) throw new Error('请先在右上角设置中填入 API Key')
-    const base64 = await this._fileToBase64(imageFile)
-    const prompt = `你是《机械制图》课程助教。看这张题目照片，判断题型，并从下面的题库中选一个 type，提取图中的尺寸参数（单位 mm，读不到的用默认值）。
+/* LLM — 图纸识别：照片 → DrawingDoc JSON */
+class Recognizer {
+  constructor(cfg) { this.cfg = cfg }
 
-题库（type: 说明 / 参数）：
-- point3: 点的三面投影 / {x,y,z}
-- line3: 直线三面投影 / {kind:"general"|"horizontal"}
-- plane3: 平面的三面投影 / {}
-- prism3: 棱柱三视图并求表面点 / {sides:3~8, R:外接圆半径, h:高}
-- pyramid3: 棱锥三视图并求表面点 / {sides, R, h}
-- cylinder3: 圆柱三视图并求表面点 / {r, h}
-- cone3: 圆锥三视图并求表面点 / {r, h}
-- sphere3: 圆球三视图并求表面点 / {r}
-- prismCut: 棱柱被正垂面截切 / {angle:截平面倾角}
-- cylCut: 圆柱被正垂面斜切 / {angle}
-- coneCut: 圆锥截交 / {kind:"ellipse"|"parabola"|"hyperbola"|"circle"|"triangle"}
-- interCyl: 两圆柱正交相贯 / {}
-- comboStack: 叠加式组合体三视图 / {}
-- comboCut: 切割式组合体三视图 / {}
-- axoIso: 正等轴测图 / {}
-- axoCab: 斜二轴测图 / {}
-- hook: 吊钩平面图形（圆弧连接） / {}
-- arcConn: 圆弧连接基本形式 / {}
-- shaft: 阶梯轴零件图 / {}
-- flange: 法兰盘零件图 / {}
-- bracket: L 形支架零件图 / {}
-
-判断要点：
-1. 出现"三视图""投影""表面取点""求另外两面投影"→ 归入 point3/line3/prism3/pyramid3/cylinder3/cone3/sphere3
-2. 出现"截交线""相贯线"→ prismCut/cylCut/coneCut/interCyl
-3. 只有平面图形 + 一堆 R 和 Ø 尺寸（圆弧相切）→ hook 或 arcConn
-4. 出现"轴测图"→ axoIso/axoCab
-5. 标注齐全的零件图 → shaft/flange/bracket
-
-只输出 JSON，不要解释，不要 markdown 代码块：
-{"type":"...","name":"题目名称（中文）","params":{...}}`
-    const res = await fetch(`${AppConfig.baseUrl.replace(/\/$/, '')}/chat/completions`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${AppConfig.apiKey}` },
-      body: JSON.stringify({
-        model: AppConfig.model,
-        messages: [{
-          role: 'user',
-          content: [
-            { type: 'image_url', image_url: { url: base64 } },
-            { type: 'text', text: prompt },
-          ],
-        }],
-        max_tokens: 800,
-      }),
-    })
-    if (!res.ok) throw new Error(`API 错误 ${res.status}: ${await res.text()}`)
-    const data = await res.json()
-    let content = (data.choices?.[0]?.message?.content || '').trim()
-    content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
-    const m = content.match(/\{[\s\S]*\}/)
-    if (!m) throw new Error('AI 返回格式错误，请重试')
-    return JSON.parse(m[0])
+  async recognize(file, onIssue) {
+    if (!AppConfig.hasApiKey) throw new Error('请先在设置中填入 API Key')
+    const dataUrl = await this._toDataUrl(file)
+    let lastErr = null
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const raw = await this._call(dataUrl, attempt > 0)
+        const { doc, issues } = DrawingDoc.normalize(raw, { width: 920, height: 660 })
+        if (onIssue) onIssue(issues)
+        if (!doc) throw new Error(issues.find(i => i.level === 'error')?.msg || '模型输出无法解析')
+        return { doc, issues, raw }
+      } catch (e) {
+        lastErr = e
+        if (!/无法解析|不是合法 JSON|格式/.test(e.message)) throw e
+      }
+    }
+    throw lastErr
   }
 
-  _fileToBase64(file) {
+  async _call(dataUrl, repair) {
+    const body = {
+      model: this.cfg.model,
+      temperature: 0.1,
+      max_tokens: 4000,
+      messages: [
+        { role: 'system', content: Recognizer.PROMPT },
+        {
+          role: 'user',
+          content: [
+            { type: 'image_url', image_url: { url: dataUrl } },
+            { type: 'text', text: repair ? '上一次输出不是合法 JSON。请只输出一个 JSON 对象，不要围栏、不要解释。' : '识别这张工程制图题目，拆成可回放的绘图步骤，只输出 JSON。' },
+          ],
+        },
+      ],
+    }
+    const res = await fetch(`${this.cfg.baseUrl.replace(/\/$/, '')}/chat/completions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${this.cfg.apiKey}` },
+      body: JSON.stringify(body),
+    })
+    if (!res.ok) throw new Error(`接口返回 ${res.status}：${(await res.text()).slice(0, 200)}`)
+    const json = await res.json()
+    const content = json.choices?.[0]?.message?.content
+    if (!content) throw new Error('接口未返回内容')
+    return content
+  }
+
+  _toDataUrl(file) {
     return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = () => resolve(reader.result)
-      reader.onerror = reject
-      reader.readAsDataURL(file)
+      const fr = new FileReader()
+      fr.onload = () => resolve(fr.result)
+      fr.onerror = () => reject(new Error('图片读取失败'))
+      fr.readAsDataURL(file)
     })
   }
 }
+
+Recognizer.PROMPT = `你是《机械制图 / 画法几何》助教。把用户上传的题目图片，转成一份"可逐步播放的绘图指令"JSON。
+
+你不是在画一幅图，而是在拆解画图的过程：先定基准，再画已知线段，最后画连接线并标注尺寸。
+
+【输出铁律】
+1. 只输出一个 JSON 对象，不要 markdown 围栏，不要任何解释文字。
+2. 严格用下方字段，不增字段名、不加层级。
+3. 看不清的宁可不画，并写进 warnings。
+4. 不要输出 SVG、path 字符串、箭头或尺寸界线的坐标——这些由前端算。
+
+【坐标系】
+- 画布 920 × 660，原点在左上角，x 向右，y 向下。
+- 所有图形落在安全区 x∈[70,850]，y∈[70,590] 内。
+- 单位是画布像素，1 位小数即可。不必按 1:1，真实尺寸只体现在 dimension.text 里。
+- arc 角度：0° 指向 +x，逆时针为正；但 y 轴向下，取点公式是 (cx + r·cosθ, cy − r·sinθ)。
+  即 θ=90° 在正上方，θ=180° 在正左方。endAngle > startAngle 表示逆时针。
+
+【图元白名单】
+- line: {kind:"line", id, lineType, x1,y1,x2,y2}
+- circle: {kind:"circle", id, lineType, cx,cy,r}
+- arc: {kind:"arc", id, lineType, cx,cy,r,startAngle,endAngle}
+- dimension: {kind:"dimension", id, from:{x,y}, to:{x,y}, offset, orientation:"aligned"|"horizontal"|"vertical", text}
+- text: {kind:"text", id, x, y, text, size(默认18), anchor:"start"|"middle"|"end"}
+- point: {kind:"point", id, x, y}   // 小圆点，用于 A、B 等被求的点
+
+lineType：thick 可见轮廓 / dashed 不可见轮廓 / center 轴线·中心线·对称线 / thin 细实线（少用）。
+尺寸标注自动按细实线画，不要给 dimension 加 lineType。
+
+【画法几何专项规则】
+1. 三视图：主视图左上，俯视图正下方，左视图正右侧。
+   - 主视图与俯视图"长对正"：同一特征的 x 完全一致。
+   - 主视图与左视图"高平齐"：同一特征的 y 完全一致。
+   - 俯视图与左视图"宽相等"：俯视图竖直跨度 = 左视图水平跨度。
+   - 每个视图先画中心线（center），再画轮廓（thick），不可见轮廓用 dashed。
+   - 建议布局：主视图 x∈[140,420] y∈[110,340]；俯视图 y∈[400,570]；左视图 x∈[500,780]。
+2. 表面取点：已知投影用 point + text 标出（如 a′），求出的投影同样标出。
+   - 主视图用 a′、俯视图用 a、左视图用 a″；不可见时文字加括号，如 (b″)。
+   - 文字放在点右上方 10~14px。
+3. 轴测图：X 轴向右下 30°，Y 轴向左下 30°，Z 轴竖直向上。
+4. 圆弧连接：先画已知圆弧（circle/arc），再画连接弧；切点按"外切 r+R、内切 |R−r|"定圆心。
+5. 尺寸只标题目给出的或关键的 3~6 个，不要凑数。
+
+【步骤拆分方法论】
+按真实作图顺序，每步只做一件事：
+1) 基准（中心线、轴线）→ 2) 已知线段 → 3) 中间线段 → 4) 连接线段 → 5) 尺寸（集中最后一步）
+- 步骤数 3~10，每步 1~6 个图元。
+- title ≤ 12 字，动宾结构，如"画俯视图五边形""求 a″ 的投影"。
+- narration ≤ 60 字，讲清依据或易错点，不要复述 title。
+
+【输出格式】
+{"version":"1.0","meta":{"title":"零件/题目名称","standard":"GB/T 4457.4","unit":"mm","width":920,"height":660,"summary":"一句话说明你看懂了什么，≤40字","confidence":0.9},"warnings":[],"steps":[{"id":"s1","title":"画中心线","narration":"先定圆心与轴线，后面所有尺寸都从这里量起。","primitives":[{"id":"s1-e1","kind":"line","lineType":"center","x1":180,"y1":300,"x2":620,"y2":300}]}]}
+
+【自检】
+- 只有一个 JSON？id 全局唯一？坐标都在安全区？
+- arc 的角度换算是否遵守 y 轴向下？
+- 尺寸是否都在最后一步、都带 text？
+- 三视图是否满足长对正、高平齐？
+
+现在开始，只输出 JSON。`
 
   // ===== js/app.js =====
 /* App — 界面与调度 */
@@ -2347,175 +2831,231 @@ const CATS = [
 ]
 
 const VARIANTS = {
-  prism3: [
-    { label: '三棱柱', params: { sides: 3 } },
-    { label: '四棱柱', params: { sides: 4 } },
-    { label: '五棱柱', params: { sides: 5 } },
-    { label: '六棱柱', params: { sides: 6 } },
-  ],
-  pyramid3: [
-    { label: '三棱锥', params: { sides: 3 } },
-    { label: '四棱锥', params: { sides: 4 } },
-    { label: '五棱锥', params: { sides: 5 } },
-  ],
-  line3: [
-    { label: '一般位置直线', params: { kind: 'general' } },
-    { label: '水平线', params: { kind: 'horizontal' } },
-  ],
-  coneCut: [
-    { label: '椭圆', params: { kind: 'ellipse' } },
-    { label: '抛物线', params: { kind: 'parabola' } },
-    { label: '双曲线', params: { kind: 'hyperbola' } },
-    { label: '圆', params: { kind: 'circle' } },
-    { label: '三角形', params: { kind: 'triangle' } },
-  ],
-  prismCut: [
-    { label: '30°', params: { angle: 30 } },
-    { label: '45°', params: { angle: 45 } },
-    { label: '60°', params: { angle: 60 } },
-  ],
-  cylCut: [
-    { label: '25°', params: { angle: 25 } },
-    { label: '35°', params: { angle: 35 } },
-    { label: '50°', params: { angle: 50 } },
-  ],
+  prism3: [{ label: '三棱柱', params: { sides: 3 } }, { label: '四棱柱', params: { sides: 4 } }, { label: '五棱柱', params: { sides: 5 } }, { label: '六棱柱', params: { sides: 6 } }],
+  pyramid3: [{ label: '三棱锥', params: { sides: 3 } }, { label: '四棱锥', params: { sides: 4 } }, { label: '五棱锥', params: { sides: 5 } }],
+  line3: [{ label: '一般位置', params: { kind: 'general' } }, { label: '水平线', params: { kind: 'horizontal' } }],
+  coneCut: [{ label: '椭圆', params: { kind: 'ellipse' } }, { label: '抛物线', params: { kind: 'parabola' } }, { label: '双曲线', params: { kind: 'hyperbola' } }, { label: '圆', params: { kind: 'circle' } }, { label: '三角形', params: { kind: 'triangle' } }],
+  prismCut: [{ label: '30°', params: { angle: 30 } }, { label: '45°', params: { angle: 45 } }, { label: '60°', params: { angle: 60 } }],
+  cylCut: [{ label: '25°', params: { angle: 25 } }, { label: '35°', params: { angle: 35 } }, { label: '50°', params: { angle: 50 } }],
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   const ALL = Object.assign({}, Templates.T, Templates2D.T)
-  const canvas = document.getElementById('canvas')
-  const engine = new DrawEngine(canvas)
+  const render = new SvgRender(document.getElementById('paper'))
+  const $ = id => document.getElementById(id)
   const ui = {
-    btnPrev: document.getElementById('btn-prev'),
-    btnPlay: document.getElementById('btn-play'),
-    btnNext: document.getElementById('btn-next'),
-    speedSelect: document.getElementById('speed-select'),
-    stepCurrent: document.getElementById('step-current'),
-    stepTotal: document.getElementById('step-total'),
-    stepList: document.getElementById('step-list'),
-    stepDesc: document.getElementById('step-desc'),
-    stepTitle: document.getElementById('step-title'),
-    partName: document.getElementById('current-part-name'),
+    btnPrev: $('btn-prev'), btnPlay: $('btn-play'), btnNext: $('btn-next'), btnReset: $('btn-reset'),
+    speedSelect: $('speed-select'),
+    stepCurrent: $('step-current'), stepTotal: $('step-total'),
+    stepList: $('step-list'), stepTitle: $('step-title'), stepDesc: $('step-desc'),
   }
-  const player = new Player(engine, ui)
-  const variantBar = document.getElementById('variant-bar')
-  let currentId = null, currentParams = {}
+  const player = new Player(render, ui)
+  let currentId = null, currentParams = {}, currentScene = null
 
-  // ---------- 题库列表 ----------
-  const listBox = document.getElementById('template-list')
+  /* ---------- 题库 ---------- */
+  const libBox = $('lib-cats')
   CATS.forEach(([cat, name]) => {
     const items = Object.values(ALL).filter(t => t.cat === cat)
     if (!items.length) return
     const g = document.createElement('div')
     g.className = 'cat'
-    const h = document.createElement('div')
-    h.className = 'cat-h'
-    h.textContent = name
-    g.appendChild(h)
+    g.dataset.cat = cat
+    g.innerHTML = `<div class="cat-h">${name}</div>`
     items.forEach(t => {
       const b = document.createElement('button')
-      b.className = 'template-item'
-      b.textContent = t.name
+      b.className = 'item'
       b.dataset.id = t.id
-      b.onclick = () => load(t.id)
+      b.dataset.name = t.name
+      b.textContent = t.name
+      b.onclick = () => loadTemplate(t.id)
       g.appendChild(b)
     })
-    listBox.appendChild(g)
+    libBox.appendChild(g)
   })
 
-  function load(id, params) {
+  $('lib-search').addEventListener('input', e => {
+    const q = e.target.value.trim()
+    libBox.querySelectorAll('.cat').forEach(g => {
+      let hit = 0
+      g.querySelectorAll('.item').forEach(b => {
+        const ok = !q || b.dataset.name.includes(q)
+        b.style.display = ok ? '' : 'none'
+        if (ok) hit++
+      })
+      g.style.display = hit ? '' : 'none'
+    })
+  })
+
+  function loadTemplate(id, params) {
     const t = ALL[id]
     if (!t) return
     currentId = id
     const base = (VARIANTS[id] && VARIANTS[id][0].params) || {}
     currentParams = Object.assign({}, base, params || {})
-    let d
-    try {
-      d = t.build(currentParams)
-    } catch (err) {
-      console.error(err)
-      alert('生成失败：' + err.message)
-      return
-    }
-    player.load(d)
-    document.querySelectorAll('.template-item').forEach(b => b.classList.toggle('active', b.dataset.id === id))
+    let draw
+    try { draw = t.build(currentParams) } catch (err) { toast('生成失败：' + err.message, 'err'); return }
+    currentScene = DrawingDoc.fromDraw(draw)
+    player.load(currentScene)
+    setMode('template')
+    $('doc-title').textContent = draw.title
     renderVariants(id)
-    ui.partName.textContent = d.title
+    document.querySelectorAll('.item').forEach(b => b.classList.toggle('on', b.dataset.id === id))
+    clearAiCard()
   }
 
   function renderVariants(id) {
+    const bar = $('variant-bar')
     const vs = VARIANTS[id]
-    variantBar.innerHTML = ''
-    if (!vs) { variantBar.classList.add('hidden'); return }
-    variantBar.classList.remove('hidden')
+    bar.innerHTML = ''
+    if (!vs) { bar.classList.add('hide'); return }
+    bar.classList.remove('hide')
     vs.forEach(v => {
       const b = document.createElement('button')
       b.className = 'chip'
       b.textContent = v.label
-      const same = Object.keys(v.params).every(k => currentParams[k] === v.params[k])
-      if (same) b.classList.add('on')
-      b.onclick = () => { currentParams = Object.assign({}, currentParams, v.params); load(id, currentParams) }
-      variantBar.appendChild(b)
+      if (Object.keys(v.params).every(k => currentParams[k] === v.params[k])) b.classList.add('on')
+      b.onclick = () => { const p = Object.assign({}, currentParams, v.params); loadTemplate(id, p) }
+      bar.appendChild(b)
     })
   }
 
-  // ---------- 交互 ----------
-  const fileInput = document.getElementById('file-input')
-  const overlay = document.getElementById('overlay-loading')
-  const settingsModal = document.getElementById('settings-modal')
-  document.getElementById('btn-upload').onclick = () => fileInput.click()
-  fileInput.onchange = async e => {
-    const file = e.target.files[0]
-    if (!file) return
-    if (!AppConfig.hasApiKey) {
-      alert('请先点右上角 ⚙ 设置，填入 API Key')
-      openSettings()
-      return
+  function renderVariantsKeep() {}
+  void renderVariantsKeep
+
+  /* ---------- 识图 ---------- */
+  const status = $('ai-status')
+  const drop = $('drop')
+  const fileInput = $('file-input')
+
+  function setMode(mode) {
+    document.body.dataset.mode = mode
+    $('mode-tag').textContent = mode === 'doc' ? 'AI 识图' : '内置题库'
+    $('mode-tag').className = 'tag ' + (mode === 'doc' ? 'is-doc' : '')
+  }
+
+  function clearAiCard() {
+    $('ai-result').classList.add('hide')
+  }
+
+  drop.onclick = () => fileInput.click()
+  ;['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over') }))
+  ;['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over') }))
+  drop.addEventListener('drop', e => {
+    const f = e.dataTransfer.files && e.dataTransfer.files[0]
+    if (f) handleFile(f)
+  })
+  fileInput.onchange = e => { const f = e.target.files[0]; if (f) handleFile(f) }
+  // 支持直接粘贴截图
+  window.addEventListener('paste', e => {
+    const items = e.clipboardData && e.clipboardData.items
+    if (!items) return
+    for (const it of items) {
+      if (it.type && it.type.startsWith('image/')) {
+        const f = it.getAsFile()
+        if (f) { handleFile(f); e.preventDefault(); return }
+      }
     }
-    overlay.classList.remove('hidden')
+  })
+
+  async function handleFile(file) {
+    if (!file.type.startsWith('image/')) { toast('请上传图片文件', 'err'); return }
+    if (!AppConfig.hasApiKey) { openSettings(); toast('先填 API Key，再上传题目', 'err'); return }
+    status.className = 'ai-status loading'
+    status.textContent = '正在识图…'
+    $('ai-result').classList.add('hide')
+    const t0 = performance.now()
     try {
-      const r = await new LLMRecognizer().recognize(file)
-      if (!ALL[r.type]) throw new Error(`AI 判断的题型 "${r.type}" 不在题库中，请换一张更清晰的图`)
-      load(r.type, r.params)
-      const chip = document.createElement('div')
-      chip.className = 'ai-note'
-      chip.textContent = `AI 识别：${r.name || r.type}`
-      variantBar.prepend(chip)
+      const rec = new Recognizer({ baseUrl: AppConfig.baseUrl, apiKey: AppConfig.apiKey, model: AppConfig.model })
+      const { doc, issues } = await rec.recognize(file)
+      const scene = DrawingDoc.toScene(doc)
+      currentScene = scene
+      player.load(scene)
+      setMode('doc')
+      $('doc-title').textContent = doc.meta.title
+      renderVariants(null)
+      document.querySelectorAll('.item').forEach(b => b.classList.remove('on'))
+      showAiResult(doc, issues, Math.round(performance.now() - t0))
+      status.className = 'ai-status ok'
+      status.textContent = `识别完成 · ${doc.steps.length} 步`
     } catch (err) {
-      alert('识别失败：' + err.message)
+      status.className = 'ai-status err'
+      status.textContent = '识别失败'
+      showAiError(err.message)
     } finally {
-      overlay.classList.add('hidden')
       fileInput.value = ''
     }
   }
 
-  function openSettings() {
-    const cfg = AppConfig.get()
-    document.getElementById('cfg-baseurl').value = cfg.baseUrl || 'https://api.openai.com/v1'
-    document.getElementById('cfg-apikey').value = cfg.apiKey || ''
-    document.getElementById('cfg-model').value = cfg.model || 'gpt-4o'
-    settingsModal.classList.remove('hidden')
-  }
-  document.getElementById('btn-settings').onclick = openSettings
-  document.getElementById('btn-cancel-settings').onclick = () => settingsModal.classList.add('hidden')
-  document.getElementById('btn-save-settings').onclick = () => {
-    AppConfig.save({
-      baseUrl: document.getElementById('cfg-baseurl').value,
-      apiKey: document.getElementById('cfg-apikey').value,
-      model: document.getElementById('cfg-model').value,
-    })
-    settingsModal.classList.add('hidden')
+  function showAiResult(doc, issues, ms) {
+    const card = $('ai-result')
+    card.classList.remove('hide')
+    const conf = doc.meta.confidence
+    const level = conf == null ? '' : conf >= 0.85 ? 'high' : conf >= 0.65 ? 'mid' : 'low'
+    card.innerHTML = `
+      <div class="ai-summary">${escapeHtml(doc.meta.summary || '（模型未给出摘要）')}</div>
+      <div class="ai-meta">
+        ${conf == null ? '' : `<span class="conf ${level}">置信度 ${(conf * 100).toFixed(0)}%</span>`}
+        <span class="muted">${ms} ms</span>
+      </div>
+      ${doc.warnings.length ? `<ul class="warns">${doc.warnings.map(w => `<li>${escapeHtml(w)}</li>`).join('')}</ul>` : ''}
+      ${issues && issues.length ? `<details class="issues"><summary>${issues.length} 条自动修复</summary><ul>${issues.map(i => `<li>${escapeHtml(i.msg)}</li>`).join('')}</ul></details>` : ''}
+    `
   }
 
+  function showAiError(msg) {
+    const card = $('ai-result')
+    card.classList.remove('hide')
+    card.innerHTML = `<div class="ai-error">${escapeHtml(msg)}</div>
+      <p class="hint">可以换一张更清晰的图，或在设置里换一个支持图片输入的模型。</p>`
+  }
+
+  /* ---------- 设置 ---------- */
+  const modal = $('settings-modal')
+  function openSettings() {
+    const cfg = AppConfig.get()
+    $('cfg-baseurl').value = cfg.baseUrl || 'https://api.openai.com/v1'
+    $('cfg-apikey').value = cfg.apiKey || ''
+    $('cfg-model').value = cfg.model || 'gpt-4o'
+    modal.classList.remove('hide')
+  }
+  $('btn-settings').onclick = openSettings
+  $('btn-cancel-settings').onclick = () => modal.classList.add('hide')
+  $('btn-save-settings').onclick = () => {
+    AppConfig.save({
+      baseUrl: $('cfg-baseurl').value.trim(),
+      apiKey: $('cfg-apikey').value.trim(),
+      model: $('cfg-model').value.trim(),
+    })
+    modal.classList.add('hide')
+    toast('已保存', 'ok')
+  }
+
+  /* ---------- 导出 ---------- */
+  $('btn-svg').onclick = () => render.exportSvg(currentScene ? currentScene.title : 'drawing')
+  $('btn-png').onclick = () => render.exportPng(currentScene ? currentScene.title : 'drawing', 2)
+
+  /* ---------- 键盘 ---------- */
   document.addEventListener('keydown', e => {
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return
-    if (e.key === 'ArrowRight') player.next()
-    if (e.key === 'ArrowLeft') player.prev()
+    if (['INPUT', 'SELECT', 'TEXTAREA'].includes(e.target.tagName)) return
+    if (e.key === 'ArrowRight') { e.preventDefault(); player.next() }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); player.prev() }
     if (e.key === ' ') { e.preventDefault(); player.toggle() }
   })
 
-  // 默认载入：五棱柱（对应最常见的棱柱取点题）
-  load('prism3', { sides: 5 })
+  function toast(msg, kind) {
+    const t = $('toast')
+    t.textContent = msg
+    t.className = 'toast show ' + (kind || '')
+    clearTimeout(t._t)
+    t._t = setTimeout(() => { t.className = 'toast' }, 2400)
+  }
+
+  // 默认示例
+  loadTemplate('prism3', { sides: 5 })
+  if (!AppConfig.hasApiKey) {
+    status.textContent = '未配置识别接口 · 可先用下方题库'
+    status.className = 'ai-status'
+  }
 })
   </script>
 

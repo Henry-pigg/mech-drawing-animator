@@ -176,7 +176,7 @@ const Paper = (() => {
     if (e.t === 'arc') return arcPts(e.c, e.r, e.a0, e.a1)
     if (e.t === 'dot') return [e.p]
     if (e.t === 'text') {
-      const n = (e.s || '').length * (e.size || 3) * 0.55
+      const n = (e.s || '').length * (e.size || 3) * 0.72
       const w = e.anchor === 'start' ? [0, n] : e.anchor === 'end' ? [-n, 0] : [-n / 2, n / 2]
       return [[e.p[0] + w[0], e.p[1] - 1], [e.p[0] + w[1], e.p[1] + 1]]
     }
@@ -191,8 +191,87 @@ const Paper = (() => {
     return { x0, y0, x1, y1, w: x1 - x0, h: y1 - y0 }
   }
 
+  /* ---------- 通用尺寸标注（对齐 / 水平 / 竖直，对应 DrawingDoc.dimension） ----------
+   * 规则参考 GB/T 4457.4 / GB/T 16675.2：
+   * 尺寸界线从轮廓外留 gap 起，超出尺寸线 extend；箭头为实心三角形；数字写在尺寸线上方且字头朝上。
+   */
+  function dimPrim(spec) {
+    const {
+      from, to, offset = 12, orientation = 'aligned', text: txt,
+      arrow = 'both', gap = 1.6, extend = 2.4, arrowLen = 3.2, arrowW = 1.1, textGap = 3.2,
+      size = 3.0, k = 1,
+    } = spec
+    const G = gap * k, EX = extend * k, AL = arrowLen * k, AW = arrowW * k, TG = textGap * k
+    let dir
+    if (orientation === 'horizontal') dir = [1, 0]
+    else if (orientation === 'vertical') dir = [0, 1]
+    else {
+      const dx = to[0] - from[0], dy = to[1] - from[1], L = Math.hypot(dx, dy) || 1
+      dir = [dx / L, dy / L]
+    }
+    const sign = offset >= 0 ? 1 : -1
+    const dist = Math.abs(offset)
+    const n = [-dir[1] * sign, dir[0] * sign]          // 左法向
+    let d1, d2
+    if (orientation === 'horizontal') {
+      const y = from[1] + n[1] * dist
+      d1 = [from[0], y]; d2 = [to[0], y]
+    } else if (orientation === 'vertical') {
+      const x = from[0] + n[0] * dist
+      d1 = [x, from[1]]; d2 = [x, to[1]]
+    } else {
+      d1 = [from[0] + n[0] * dist, from[1] + n[1] * dist]
+      d2 = [to[0] + n[0] * dist, to[1] + n[1] * dist]
+    }
+    if ((d2[0] - d1[0]) * dir[0] + (d2[1] - d1[1]) * dir[1] < 0) { const t = d1; d1 = d2; d2 = t }
+
+    const els = []
+    if (dist > 0.4) {
+      ;[from, to].forEach(p => {
+        els.push(line([p[0] + n[0] * G, p[1] + n[1] * G],
+          [p[0] + n[0] * (dist + EX), p[1] + n[1] * (dist + EX)],
+          'thin', { color: C.dim, noAnim: true }))
+      })
+    }
+    els.push(line(d1, d2, 'dim', { color: C.dim, noAnim: true }))
+    const tri = (tip, toward) => {
+      const vx = toward[0] - tip[0], vy = toward[1] - tip[1], L = Math.hypot(vx, vy) || 1
+      const ux = vx / L, uy = vy / L, bx = tip[0] + ux * AL, by = tip[1] + uy * AL
+      return poly([tip, [bx - uy * AW / 2, by + ux * AW / 2], [bx + uy * AW / 2, by - ux * AW / 2]],
+        'dim', true, { fill: true, color: C.dim, noAnim: true, w: 0.12 })
+    }
+    if (arrow === 'both' || arrow === 'start') els.push(tri(d1, d2))
+    if (arrow === 'both' || arrow === 'end') els.push(tri(d2, d1))
+
+    const mid = [(d1[0] + d2[0]) / 2, (d1[1] + d2[1]) / 2]
+    let a = Math.atan2(d2[1] - d1[1], d2[0] - d1[0])
+    while (a > Math.PI / 2) a -= Math.PI
+    while (a < -Math.PI / 2) a += Math.PI
+    if (Math.abs(a - Math.PI / 2) < 1e-6) a = -Math.PI / 2
+    const val = txt != null && txt !== '' ? txt : String(Math.round(Math.hypot(d2[0] - d1[0], d2[1] - d1[1]) * 10) / 10)
+    els.push(text([mid[0] + n[0] * TG, mid[1] + n[1] * TG], val,
+      { size, color: C.dim, rot: a, noAnim: true }))
+    return { els, measured: Math.hypot(d2[0] - d1[0], d2[1] - d1[1]) }
+  }
+
+  // 平移整组图元
+  function translate(els, dx, dy) {
+    const mv = p => p ? [p[0] + dx, p[1] + dy] : p
+    return els.map(e => {
+      const c = Object.assign({}, e)
+      if (c.a) c.a = mv(c.a)
+      if (c.b) c.b = mv(c.b)
+      if (c.c) c.c = mv(c.c)
+      if (c.p) c.p = mv(c.p)
+      if (c.tip) c.tip = mv(c.tip)
+      if (c.from) c.from = mv(c.from)
+      if (c.pts) c.pts = c.pts.map(mv)
+      return c
+    })
+  }
+
   return {
-    ST, C, P, line, poly, circle, arc, dot, text, arrow, arcPts, bbox,
+    ST, C, P, line, poly, circle, arc, dot, text, arrow, arcPts, bbox, dimPrim, translate,
     dimH, dimV, dimAligned, dimR, dimD, leader, pointMark, eps: 1e-9,
   }
 })()

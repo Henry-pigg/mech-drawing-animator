@@ -110,8 +110,8 @@ const Templates2D = (() => {
     ]
     // 6 尺寸
     const s6 = [
-      ...Paper.dimV(0, TOP, -30, '85', { from: -46 }),
-      ...Paper.dimV(-13, 0, -44, '13', { from: -46 }),
+      ...Paper.dimV(0, TOP, -30, '85', { from: -11 }),
+      ...Paper.dimV(-13, 0, -42, '13', { from: -33 }),
       ...Paper.dimH(-PY, PY, TOP + 9, 'Ø16', { from: TOP }),
       ...Paper.dimH(-SX, SX, SHOULDER - 14, 'Ø20', { from: SHOULDER - 10 }),
       ...Paper.dimV(SHOULDER, TOP, 18, '16', { from: PY }),

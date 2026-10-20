@@ -3,95 +3,112 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>机械制图过程演示 · 画法几何</title>
+  <title>机械制图 · 分步绘制</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <header>
+  <header class="bar">
     <div class="brand">
-      <span class="logo">▱</span>
-      <div>
-        <h1>机械制图过程演示</h1>
-        <p class="sub">点线面投影 · 三视图 · 截交相贯 · 组合体 · 轴测图 · 几何作图</p>
+      <span class="mark">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+          <path d="M3 20h18M6 20V8l6-4 6 4v12M10 20v-5h4v5"/>
+        </svg>
+      </span>
+      <div class="brand-txt">
+        <h1>机械制图 · 分步绘制</h1>
+        <p>画法几何 / 三视图 / 截交相贯 / 几何作图</p>
       </div>
     </div>
-    <button id="btn-settings" class="btn-secondary">⚙ API 设置</button>
+    <div class="bar-right">
+      <span id="mode-tag" class="tag">内置题库</span>
+      <button id="btn-svg" class="btn ghost" title="导出矢量图">SVG</button>
+      <button id="btn-png" class="btn ghost" title="导出图片">PNG</button>
+      <button id="btn-settings" class="btn">⚙ 设置</button>
+    </div>
   </header>
 
-  <main>
-    <aside class="sidebar">
-      <div class="panel">
-        <h3>上传题目照片</h3>
+  <main class="layout">
+    <aside class="side">
+      <section class="card">
+        <h2>识别题目</h2>
+        <div id="drop" class="drop">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+            <path d="M12 16V4m0 0L7 9m5-5 5 5M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>
+          </svg>
+          <strong>上传题目照片</strong>
+          <span>AI 判断题型、读尺寸，拆成作图步骤</span>
+        </div>
         <input type="file" id="file-input" accept="image/*" hidden>
-        <button id="btn-upload" class="btn-primary">📷 拍照 / 上传题目</button>
-        <p class="hint">AI 识别题型与尺寸，自动生成作图步骤</p>
-      </div>
+        <div id="ai-status" class="ai-status"></div>
+        <div id="ai-result" class="ai-result hide"></div>
+      </section>
 
-      <div class="panel grow">
-        <h3>题型库</h3>
-        <div id="template-list" class="template-list"></div>
-      </div>
-
-      <div class="panel last">
-        <h3>当前题目</h3>
-        <div id="current-part-name" class="current-name">—</div>
-      </div>
+      <section class="card grow">
+        <h2>题型库</h2>
+        <input id="lib-search" class="search" placeholder="搜索题型…">
+        <div id="lib-cats" class="lib-cats"></div>
+      </section>
     </aside>
 
-    <section class="canvas-area">
-      <canvas id="canvas"></canvas>
-      <div id="variant-bar" class="variant-bar hidden"></div>
-      <div id="overlay-loading" class="overlay hidden">
-        <div class="spinner"></div>
-        <p>AI 正在识图...</p>
+    <section class="stage">
+      <div class="paper-wrap">
+        <div id="paper" class="paper"></div>
+        <div id="variant-bar" class="variant-bar hide"></div>
+      </div>
+      <div class="narration">
+        <div class="narr-head">
+          <span id="step-title" class="narr-title">—</span>
+          <span id="doc-title" class="doc-title"></span>
+        </div>
+        <p id="step-desc" class="narr-body">选择左侧题型，或上传题目照片</p>
+      </div>
+      <div class="controls">
+        <button id="btn-prev" class="btn" disabled>⏮ 上一步</button>
+        <button id="btn-play" class="btn primary" disabled>▶ 播放</button>
+        <button id="btn-next" class="btn" disabled>下一步 ⏭</button>
+        <button id="btn-reset" class="btn ghost" title="回到第一步">↺</button>
+        <label class="speed">速度
+          <select id="speed-select">
+            <option value="0.6">0.6x</option>
+            <option value="1" selected>1x</option>
+            <option value="1.8">1.8x</option>
+            <option value="3">3x</option>
+          </select>
+        </label>
+        <span class="progress"><b id="step-current">0</b> / <span id="step-total">0</span></span>
       </div>
     </section>
 
-    <aside class="sidebar right">
-      <div class="panel">
-        <h3>作图步骤</h3>
-        <div id="step-list" class="step-list"></div>
-      </div>
-      <div class="panel grow">
-        <h3>本步讲解</h3>
-        <div id="step-title" class="step-title">—</div>
-        <div id="step-desc" class="step-desc">选择一个题型开始</div>
+    <aside class="rail">
+      <h2>绘图步骤</h2>
+      <div id="step-list" class="step-list"></div>
+      <div class="legend">
+        <span><i class="l thick"></i>可见轮廓</span>
+        <span><i class="l dashed"></i>不可见</span>
+        <span><i class="l center"></i>中心线</span>
+        <span><i class="l dim"></i>尺寸</span>
       </div>
     </aside>
   </main>
 
-  <footer>
-    <button id="btn-prev" class="btn-control" disabled>⏮ 上一步</button>
-    <button id="btn-play" class="btn-control btn-primary" disabled>▶ 播放</button>
-    <button id="btn-next" class="btn-control" disabled>下一步 ⏭</button>
-    <div class="speed-control">
-      <label>速度</label>
-      <select id="speed-select">
-        <option value="0.5">0.5x</option>
-        <option value="1" selected>1x</option>
-        <option value="2">2x</option>
-        <option value="3">3x</option>
-      </select>
-    </div>
-    <div class="step-progress"><span id="step-current">0</span> / <span id="step-total">0</span></div>
-  </footer>
-
-  <div id="settings-modal" class="modal hidden">
-    <div class="modal-content">
-      <h2>API 设置</h2>
-      <p class="hint">API Key 只保存在浏览器本地，不会上传到任何服务器。</p>
+  <div id="settings-modal" class="modal hide">
+    <div class="modal-box">
+      <h2>识别模型设置</h2>
+      <p class="hint">需要支持图片输入的 OpenAI 兼容接口。Key 只存在浏览器本地。</p>
       <label>API Base URL</label>
-      <input type="text" id="cfg-baseurl" placeholder="https://api.openai.com/v1" value="https://api.openai.com/v1">
+      <input id="cfg-baseurl" type="text" placeholder="https://api.openai.com/v1" value="https://api.openai.com/v1">
       <label>API Key</label>
-      <input type="password" id="cfg-apikey" placeholder="sk-...">
-      <label>模型名称（需支持图片输入）</label>
-      <input type="text" id="cfg-model" placeholder="gpt-4o" value="gpt-4o">
+      <input id="cfg-apikey" type="password" placeholder="sk-...">
+      <label>模型</label>
+      <input id="cfg-model" type="text" placeholder="gpt-4o" value="gpt-4o">
       <div class="modal-actions">
-        <button id="btn-cancel-settings" class="btn-secondary dark">取消</button>
-        <button id="btn-save-settings" class="btn-primary">保存</button>
+        <button id="btn-cancel-settings" class="btn ghost">取消</button>
+        <button id="btn-save-settings" class="btn primary">保存</button>
       </div>
     </div>
   </div>
+
+  <div id="toast" class="toast"></div>
 
   <script src="js/config.js"></script>
   <script src="js/paper.js"></script>
@@ -99,7 +116,8 @@
   <script src="js/views.js"></script>
   <script src="js/templates.js"></script>
   <script src="js/templates2d.js"></script>
-  <script src="js/engine.js"></script>
+  <script src="js/drawingdoc.js"></script>
+  <script src="js/render.js"></script>
   <script src="js/player.js"></script>
   <script src="js/llm.js"></script>
   <script src="js/app.js"></script>

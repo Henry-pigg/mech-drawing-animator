@@ -1,127 +1,122 @@
-/* Player — 步骤播放器 */
+/* Player — 按步回放（动画由 SVG/CSS 驱动，这里只管节奏与状态） */
 class Player {
-  constructor(engine, ui) {
-    this.engine = engine
+  constructor(render, ui) {
+    this.render = render
     this.ui = ui
+    this.scene = null
     this.steps = []
-    this.current = 0
-    this.t = 0
+    this.index = 0
     this.playing = false
     this.speed = 1
-    this.last = 0
-    this._raf = null
-    this._loop = this._loop.bind(this)
+    this._timer = null
     this.ui.btnPrev.onclick = () => this.prev()
     this.ui.btnNext.onclick = () => this.next()
     this.ui.btnPlay.onclick = () => this.toggle()
+    this.ui.btnReset.onclick = () => this.goTo(0)
     this.ui.speedSelect.onchange = e => { this.speed = parseFloat(e.target.value) }
   }
 
-  load(drawing) {
-    this.drawing = drawing
-    this.steps = drawing.steps
-    this.current = 0
-    this.t = 1
+  load(scene) {
+    this.scene = scene
+    this.steps = scene.steps
+    this.index = 0
     this.playing = false
-    this.engine.setDrawing(drawing)
-    this.renderStepList()
+    clearTimeout(this._timer)
+    this.render.setScene(scene)
+    this.render.showStep(0)
+    this.renderSteps()
     this.update()
-    this.engine.setState({ step: 0, t: 1 })
   }
 
-  renderStepList() {
+  renderSteps() {
     const box = this.ui.stepList
     box.innerHTML = ''
     this.steps.forEach((s, i) => {
-      const d = document.createElement('div')
-      d.className = 'step-item'
-      d.innerHTML = `<span class="idx">${i + 1}</span><span class="tt">${s.title.replace(/^\d+[.、]\s*/, '')}</span>`
-      d.onclick = () => this.jump(i)
-      box.appendChild(d)
+      const b = document.createElement('button')
+      b.className = 'step'
+      b.innerHTML = `<span class="n">${i + 1}</span><span class="t">${escapeHtml(s.title)}</span>`
+      b.onclick = () => this.goTo(i)
+      box.appendChild(b)
     })
   }
 
   update() {
-    const s = this.steps[this.current]
-    this.ui.stepCurrent.textContent = this.current + 1
+    const s = this.steps[this.index]
+    this.ui.stepCurrent.textContent = this.index + 1
     this.ui.stepTotal.textContent = this.steps.length
-    this.ui.stepDesc.textContent = s ? s.desc : '—'
     this.ui.stepTitle.textContent = s ? s.title : ''
-    this.ui.partName.textContent = this.drawing.title || ''
-    this.ui.btnPrev.disabled = this.current <= 0
-    this.ui.btnNext.disabled = this.current >= this.steps.length - 1
-    this.ui.btnPlay.disabled = this.steps.length === 0
-    this.ui.btnPlay.textContent = this.playing ? '⏸ 暂停' : (this.current >= this.steps.length - 1 ? '↻ 重播' : '▶ 播放')
+    this.ui.stepDesc.innerHTML = s ? richText(s.desc || '') : ''
+    this.ui.btnPrev.disabled = this.index <= 0
+    this.ui.btnNext.disabled = this.index >= this.steps.length - 1
+    this.ui.btnPlay.disabled = !this.steps.length
+    this.ui.btnPlay.textContent = this.playing ? '⏸ 暂停' : (this.index >= this.steps.length - 1 ? '↻ 重播' : '▶ 播放')
     ;[...this.ui.stepList.children].forEach((el, i) => {
-      el.classList.toggle('current', i === this.current)
-      el.classList.toggle('done', i < this.current)
+      el.classList.toggle('cur', i === this.index)
+      el.classList.toggle('done', i < this.index)
     })
-    const cur = this.ui.stepList.children[this.current]
+    const cur = this.ui.stepList.children[this.index]
     if (cur && cur.scrollIntoView) cur.scrollIntoView({ block: 'nearest' })
   }
 
-  jump(i) {
+  goTo(i) {
     this.playing = false
-    this.current = Math.max(0, Math.min(this.steps.length - 1, i))
-    this.t = 1
-    this.engine.setState({ step: this.current, t: 1 })
+    clearTimeout(this._timer)
+    this.index = Math.max(0, Math.min(this.steps.length - 1, i))
+    this.render.showStep(this.index)
     this.update()
   }
 
   next() {
-    if (this.current < this.steps.length - 1) {
-      this.current++
-      this.t = 1
-      this.engine.setState({ step: this.current, t: 1 })
+    if (this.index < this.steps.length - 1) {
+      this.playing = false
+      clearTimeout(this._timer)
+      this.index++
+      this.render.showStep(this.index)
       this.update()
     }
   }
 
   prev() {
-    this.playing = false
-    if (this.current > 0) this.current--
-    this.t = 1
-    this.engine.setState({ step: this.current, t: 1 })
-    this.update()
+    if (this.index > 0) {
+      this.playing = false
+      clearTimeout(this._timer)
+      this.index--
+      this.render.showStep(this.index)
+      this.update()
+    }
   }
 
   toggle() {
-    if (this.playing) { this.playing = false; this.update(); return }
-    if (this.current >= this.steps.length - 1) {
-      this.current = 0
-      this.t = 0
-      this.engine.setState({ step: 0, t: 0 })
+    if (this.playing) { this.playing = false; clearTimeout(this._timer); this.update(); return }
+    if (this.index >= this.steps.length - 1) {
+      this.index = 0
+      this.render.showStep(0)
     }
     this.playing = true
-    this.last = performance.now()
     this.update()
-    if (!this._raf) this._raf = requestAnimationFrame(this._loop)
+    this._advance()
   }
 
-  _loop(now) {
-    this._raf = null
-    if (!this.playing) return
-    const dt = Math.min(80, now - this.last)
-    this.last = now
-    const dur = 1600 / this.speed
-    this.t += dt / dur
-    if (this.t >= 1) {
-      this.t = 1
-      this.engine.setState({ step: this.current, t: 1 })
-      if (this.current < this.steps.length - 1) {
-        this.current++
-        this.t = 0
+  _advance() {
+    const dur = 900 / this.speed + 520
+    this._timer = setTimeout(() => {
+      if (!this.playing) return
+      if (this.index < this.steps.length - 1) {
+        this.index++
+        this.render.showStep(this.index)
         this.update()
-        this.engine.setState({ step: this.current, t: 0 })
-        this.last = performance.now()
+        this._advance()
       } else {
         this.playing = false
         this.update()
-        return
       }
-    } else {
-      this.engine.setState({ step: this.current, t: this.t })
-    }
-    this._raf = requestAnimationFrame(this._loop)
+    }, dur)
   }
+}
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
+function richText(t) {
+  return escapeHtml(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
 }

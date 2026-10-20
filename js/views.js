@@ -74,7 +74,7 @@ const Views = (() => {
       })
       names.forEach(n => {
         const m = metas[n]
-        const off = { front: [1.6, 1.5], top: [1.6, 1.5], left: [1.6, 1.5] }[n]
+        const off = { front: [2.4, 2.0], top: [2.4, 2.0], left: [2.4, 2.0] }[n]
         parts[n] = Paper.pointMark(m.pos, m.label, {
           color: o.color || Paper.C.pick, hidden: !m.vis, off, size: 3.2,
         })
