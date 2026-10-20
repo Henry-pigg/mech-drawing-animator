@@ -7,6 +7,10 @@ const Templates = (() => {
   function def(id, cat, name, build, tip = '') { T[id] = { id, cat, name, build, tip } }
   const step = (title, desc, els) => ({ title, desc, els: (els || []).filter(Boolean) })
 
+  /* 3~12 的阿拉伯数字转中文：工程制图里写"五棱柱"而不是"5 棱柱" */
+  const CN_NUM = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二']
+  const cn = n => CN_NUM[n] || String(n)
+
   /* ---------- 抽象三视图布局（点线面投影） ---------- */
   function planeScene(W, H, D, gap = 13) {
     const map = {
@@ -136,10 +140,10 @@ const Templates = (() => {
     const pa = S.point(A, 'a', { vis: { top: true } })
     const pb = S.point(B, 'b', { vis: { top: true } })
     return {
-      title: `${n} 棱柱三视图与表面取点`,
+      title: `${cn(n)}棱柱三视图与表面取点`,
       steps: [
         ...SOLID_STEPS(S, { cx: 0, cy: 0 }, {
-          top: `${n} 棱柱的俯视图反映底面实形（正 ${n} 边形），主、左视图为矩形。`,
+          top: `${cn(n)}棱柱的俯视图反映底面实形（正${cn(n)}边形），主、左视图为矩形。`,
           front: '按"长对正"由俯视图向上投影，高度取 h，得主视图。前棱线把主视图分成两块可见棱面。',
           left: '按"高平齐、宽相等"由 45° 线求得左视图，后面的棱线不可见，画虚线。',
         }),
@@ -177,7 +181,7 @@ const Templates = (() => {
         'thin', { color: C.aux, dash: [2.4, 1.4], noAnim: true })
     })
     return {
-      title: `${n} 棱锥三视图与表面取点`,
+      title: `${cn(n)}棱锥三视图与表面取点`,
       steps: [
         ...SOLID_STEPS(S, { cx: 0, cy: 0 }, {
           top: '底面为正多边形，俯视图反映实形；锥顶的投影在中心。',

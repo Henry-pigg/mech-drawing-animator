@@ -270,8 +270,31 @@ const Paper = (() => {
     })
   }
 
+  /* 以 (ox, oy) 为不动点等比缩放整组图元。
+   * 位置、半径、线宽、字号一起缩，否则缩小后线会显得又粗又挤；
+   * 但线宽/字号的缩放幅度收一半，避免缩到很小后线条细得看不见。 */
+  function scale(els, ox, oy, k) {
+    if (!(k > 0) || Math.abs(k - 1) < 1e-9) return els.slice()
+    const sp = p => p ? [ox + (p[0] - ox) * k, oy + (p[1] - oy) * k] : p
+    const kk = k < 1 ? 1 - (1 - k) * 0.5 : k      // 线宽/字号只缩一半
+    return els.map(e => {
+      const c = Object.assign({}, e)
+      if (c.a) c.a = sp(c.a)
+      if (c.b) c.b = sp(c.b)
+      if (c.c) c.c = sp(c.c)
+      if (c.p) c.p = sp(c.p)
+      if (c.tip) c.tip = sp(c.tip)
+      if (c.from) c.from = sp(c.from)
+      if (c.pts) c.pts = c.pts.map(sp)
+      if (typeof c.r === 'number') c.r = c.r * k
+      if (typeof c.size === 'number') c.size = c.size * kk
+      if (typeof c.w === 'number') c.w = c.w * kk
+      return c
+    })
+  }
+
   return {
-    ST, C, P, line, poly, circle, arc, dot, text, arrow, arcPts, bbox, dimPrim, translate,
+    ST, C, P, line, poly, circle, arc, dot, text, arrow, arcPts, bbox, dimPrim, translate, scale,
     dimH, dimV, dimAligned, dimR, dimD, leader, pointMark, eps: 1e-9,
   }
 })()

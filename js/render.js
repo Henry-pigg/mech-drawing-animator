@@ -56,14 +56,17 @@ class SvgRender {
       const titleStr = sc.title || '未命名图纸'
       const cjk = /[\u4e00-\u9fa5]/g
       const textW = (str, fs) => (String(str).match(cjk) || []).length * fs + (String(str).replace(cjk, '').length * 0.55 * fs)
-      const fs1 = Math.max(2.0 * k, Math.min(tbH * 0.34, (tbW - 14) / Math.max(1, textW(titleStr, 1))))
-      const fs2 = Math.max(1.7 * k, Math.min(tbH * 0.18, (tbW * 0.36) / 9))
+      /* 上格放标题，下格放标准与单位。字号上限 0.26*tbH，基线放在格子垂直中线偏下一点，
+         文字才不会顶到框线上（之前 0.34 的字号配 0.31 的基线，顶端几乎贴住上边框）。 */
+      const fs1 = Math.max(2.0 * k, Math.min(tbH * 0.26, (tbW - 14) / Math.max(1, textW(titleStr, 1))))
+      const fs2 = Math.max(1.7 * k, Math.min(tbH * 0.16, (tbW * 0.36) / 9))
+      /* dominant-baseline 用 middle 让文字在格子里真正居中，不依赖经验基线 */
       parts.push(`<g font-family="'Segoe UI','Microsoft YaHei',sans-serif">
         <rect x="${tb.x}" y="${tb.y}" width="${tb.w}" height="${tb.h}" fill="#fff" stroke="#121820" stroke-width="${Math.max(1, k * 0.5)}"/>
-        <line x1="${tb.x}" y1="${tb.y + tbH * 0.48}" x2="${tb.x + tb.w}" y2="${tb.y + tbH * 0.48}" stroke="#121820" stroke-width="${Math.max(0.8, k * 0.35)}"/>
-        <text x="${tb.x + 7}" y="${tb.y + tbH * 0.31}" font-size="${r(fs1)}" font-weight="600" fill="#121820">${esc(titleStr)}</text>
-        <text x="${tb.x + 7}" y="${tb.y + tbH * 0.78}" font-size="${r(fs2)}" fill="#5a6a80">${esc(sc.standard || 'GB/T 4457.4 — 线型')}</text>
-        <text x="${tb.x + tb.w - 7}" y="${tb.y + tbH * 0.78}" font-size="${r(fs2)}" fill="#5a6a80" text-anchor="end">单位 ${esc(sc.unit || 'mm')}</text>
+        <line x1="${tb.x}" y1="${tb.y + tbH * 0.52}" x2="${tb.x + tb.w}" y2="${tb.y + tbH * 0.52}" stroke="#121820" stroke-width="${Math.max(0.8, k * 0.35)}"/>
+        <text x="${tb.x + 8}" y="${tb.y + tbH * 0.26}" font-size="${r(fs1)}" font-weight="600" fill="#121820" dominant-baseline="middle">${esc(titleStr)}</text>
+        <text x="${tb.x + 8}" y="${tb.y + tbH * 0.76}" font-size="${r(fs2)}" fill="#5a6a80" dominant-baseline="middle">${esc(sc.standard || 'GB/T 4457.4 — 线型')}</text>
+        <text x="${tb.x + tb.w - 8}" y="${tb.y + tbH * 0.76}" font-size="${r(fs2)}" fill="#5a6a80" text-anchor="end" dominant-baseline="middle">单位 ${esc(sc.unit || 'mm')}</text>
       </g>`)
     }
     parts.push('</svg>')

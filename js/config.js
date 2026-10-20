@@ -1,7 +1,7 @@
 const AppConfig = {
   KEY: 'mech_draw_config',
   /* 构建标识：改版时递增，页面上可见，方便确认打开的是哪一版 */
-  BUILD: 'r4 · svg',
+  BUILD: 'r5 · fit',
   get() {
     try { return JSON.parse(localStorage.getItem(this.KEY)) || {} }
     catch { return {} }

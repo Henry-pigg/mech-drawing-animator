@@ -186,6 +186,9 @@ const DrawingDoc = (() => {
       })
       return { title: s.title, desc: s.narration, els }
     })
+    /* 模型给的坐标只是"大概画在哪"，不能直接当图幅用 ——
+       必须和题库一样按图框可用区重新排布，否则模型画偏下就会压住标题栏。 */
+    const fit = fitToSheet(steps, { minH: Math.min(doc.meta.height, CANVAS.h) })
     return {
       title: doc.meta.title,
       summary: doc.meta.summary,
@@ -193,8 +196,8 @@ const DrawingDoc = (() => {
       warnings: doc.warnings || [],
       standard: doc.meta.standard,
       unit: doc.meta.unit,
-      sheet: { w: doc.meta.width, h: doc.meta.height, frame: true, titleBlock: true },
-      steps,
+      sheet: fit.sheet,
+      steps: fit.steps,
       mode: 'doc',
     }
   }
@@ -218,8 +221,15 @@ const DrawingDoc = (() => {
     return { pad, tbH }
   }
 
-  function fromDraw(draw) {
-    const all = draw.steps.reduce((a, s) => a.concat(s.els), [])
+  /* 按"图框内、标题栏以上"的可用区，把整组图元缩放并居中。
+   * 题库与 AI 两条路径都走这里 —— 否则模型给的坐标原样落到纸上，
+   * 画得偏下就会压住标题栏（截图里俯视图贴着标题栏就是这个原因）。
+   * scale 上限 1：小题不放大，避免把 20mm 的小件撑满整张纸。
+   */
+  function fitToSheet(steps, opts = {}) {
+    const all = steps.reduce((a, s) => a.concat(s.els), [])
+    if (!all.length) return { steps, sheet: { w: CANVAS.w, h: CANVAS.h, frame: true, titleBlock: true } }
+
     const bb = Paper.bbox(all)
     const bw = Math.max(bb.w, 1), bh = Math.max(bb.h, 1)
     const ratio = (bw / bh) >= 0.95 ? SHEET_LAND : SHEET_PORT
@@ -228,7 +238,8 @@ const DrawingDoc = (() => {
     const c = PAD_FRAC * Math.min(ratio, 1)
     const byWidth = (bw + 2 * MARGIN) / (ratio - 2 * c)
     const byHeight = (bh + 2 * MARGIN) / (1 - TB_FRAC - 2 * c)
-    let h = Math.max(byWidth, byHeight, 60)
+    const minH = opts.minH || 60
+    let h = Math.max(byWidth, byHeight, minH)
     let w = h * ratio
     // pad/tbH 依赖最终尺寸，迭代两轮收敛
     for (let i = 0; i < 3; i++) {
@@ -246,12 +257,39 @@ const DrawingDoc = (() => {
     const dx = pad + availW / 2 - (bb.x0 + bb.x1) / 2
     const dy = (y0 + y1) / 2 - (bb.y0 + bb.y1) / 2
 
+    /* 缩放：内容本身已经放得下就只平移（scale=1）；
+       放不下时按可用区等比缩小，宁可缩一点也不让它压标题栏。 */
+    const availH = y1 - y0
+    const needW = bb.w + 2 * MARGIN, needH = bh + 2 * MARGIN
+    const scale = Math.min(1, availW / Math.max(needW, 1), availH / Math.max(needH, 1))
+    const sx = Math.abs(scale - 1) > 1e-4 ? scale : 1
+
+    const out = steps.map(s => ({
+      title: s.title,
+      desc: s.desc,
+      els: sx === 1
+        ? Paper.translate(s.els, dx, dy)
+        : Paper.scale(s.els, bb.x0, bb.y0, sx),
+    }))
+    // 缩放后按实际包围盒重新居中，免去锚点偏移的推导
+    if (sx !== 1) {
+      const bb2 = Paper.bbox(out.reduce((a, s) => a.concat(s.els), []))
+      const ddx = pad + availW / 2 - (bb2.x0 + bb2.x1) / 2
+      const ddy = (y0 + y1) / 2 - (bb2.y0 + bb2.y1) / 2
+      out.forEach(s => { s.els = Paper.translate(s.els, ddx, ddy) })
+    }
+
+    return { steps: out, sheet: { w, h, frame: true, titleBlock: true }, scale: sx }
+  }
+
+  function fromDraw(draw, opts = {}) {
+    const fit = fitToSheet(draw.steps, opts)
     const title = draw.title.length > 12 ? draw.title.slice(0, 12) + '…' : draw.title
     return {
       title,
       titleFull: draw.title,
-      steps: draw.steps.map(s => ({ title: s.title, desc: s.desc, els: Paper.translate(s.els, dx, dy) })),
-      sheet: { w, h, frame: true, titleBlock: true },
+      steps: fit.steps,
+      sheet: fit.sheet,
       standard: 'GB/T 4457.4', unit: 'mm',
       warnings: [], confidence: null, summary: '', mode: 'template',
     }
